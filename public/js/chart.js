@@ -42,6 +42,10 @@ function geStopsFromStoptimes(stoptimes, stations) {
   }, []);
 }
 
+function formatStationName(station) {
+  return station.name.replace(/ Station$/i, "").replace(/ Amtrak$/i, "").replace(/ Moynihan Train Hall at/i, "").replace(/ Transportation Center$/i, "").replace(/ Regional$/i, "");
+}
+
 function formatStopTime(stop) {
   const timeFormatter = d3.utcFormat('%-I:%M %p');
   let formattedTime = '';
@@ -80,9 +84,9 @@ function renderChart(data) {
     stop
   })));
 
-  const height = 2400;
+  const height = 1200;
   const width = 800;
-  const topMargin = 20 + (_.max(_.map(stations, station => station.name.length)) * 4.6);
+  const topMargin = 20 + (_.max(_.map(stations, station => formatStationName(station).length)) * 4.6);
   const margin = ({ top: topMargin, right: 30, bottom: topMargin, left: 50 });
 
   const primaryDirectionId = getPrimaryDirectionId(stations);
@@ -100,7 +104,7 @@ function renderChart(data) {
     .range([margin.top, height - margin.bottom]);
 
   const xAxis = g => g
-    .style('font', '10px sans-serif')
+    .style('font', '10px "Roboto Condensed", sans-serif')
     .selectAll('g')
     .data(stations)
     .join('g')
@@ -123,16 +127,17 @@ function renderChart(data) {
       .attr('transform', `translate(0,${margin.top}) rotate(-90)`)
       .attr('x', 12)
       .attr('dy', '0.35em')
-      .text(d => d.name))
+      .text(formatStationName))
     .style('display', d => d.direction_id === primaryDirectionId ? 'block' : 'none')
     .call(g => g.append('text')
       .attr('text-anchor', 'end')
       .attr('transform', `translate(0,${height - margin.top}) rotate(-90)`)
       .attr('x', -12)
       .attr('dy', '0.35em')
-      .text(d => d.name));
+      .text(formatStationName));
 
   const yAxis = g => g
+    .style('font', '10px "Roboto Condensed", sans-serif')
     .attr('transform', `translate(${margin.left},0)`)
     .call(d3.axisLeft(y)
       .ticks(d3.utcHour)
@@ -148,7 +153,7 @@ function renderChart(data) {
 
   const tooltip = g => {
     const tooltip = g.append('g')
-      .style('font', '10px sans-serif');
+      .style('font', '10px "Roboto Condensed", sans-serif');
 
     const path = tooltip.append('path')
       .attr('fill', 'white');
@@ -179,7 +184,7 @@ function renderChart(data) {
       .on('mouseover', d => {
         tooltip.style('display', null);
         line1.text(`Trip ${d.trip.number} to ${d.trip.trip_headsign}`);
-        line2.text(d.stop.station.name);
+        line2.text(formatStationName(d.stop.station));
         line3.text(formatStopTime(d.stop));
         path.attr('stroke', 'rgb(34, 34, 34)');
         const box = text.node().getBBox();
@@ -208,6 +213,31 @@ function renderChart(data) {
   svg.append('g')
     .call(yAxis);
 
+  const startOfFirstDay = moment(d3.extent(stops, s => s.stop.time)[0]).startOf('day').subtract(5, 'hours');
+
+  svg.append("linearGradient")
+      .attr("id", "line-gradient")
+      .attr("gradientUnits", "userSpaceOnUse")
+      .attr("x1", 0)
+      .attr("y1", y(startOfFirstDay))
+      .attr("x2", 0)
+      .attr("y2", y(startOfFirstDay.add(4, 'days')))
+      .selectAll("stop")
+        .data([
+          {offset: "0%", color: "slateblue"},
+          {offset: "12.5%", color: "palegoldenrod"},
+          {offset: "25%", color: "slateblue"},
+          {offset: "37.5%", color: "palegoldenrod"},
+          {offset: "50%", color: "slateblue"},
+          {offset: "62.5%", color: "palegoldenrod"},
+          {offset: "75%", color: "slateblue"},
+          {offset: "87.5%", color: "palegoldenrod"},
+          {offset: "100%", color: "slateblue"}
+        ])
+      .enter().append("stop")
+        .attr("offset", function(d) { return d.offset; })
+        .attr("stop-color", function(d) { return d.color; });
+
   const vehicle = svg.append('g')
     .attr('stroke-width', 1.5)
     .selectAll('g')
@@ -216,7 +246,7 @@ function renderChart(data) {
 
   vehicle.append('path')
     .attr('fill', 'none')
-    .attr('stroke', d => 'rgb(34, 34, 34)')
+    .attr('stroke', d => 'url(#line-gradient)')
     .attr('d', d => line(d.stops));
 
   vehicle.append('g')
