@@ -42,8 +42,25 @@ function geStopsFromStoptimes(stoptimes, stations) {
   }, []);
 }
 
+function formatTimeZoneName(name) {
+  switch (name) {
+    case "America/New_York":
+      return "ET";
+    case "America/Chicago":
+      return "CT";
+    case "America/Denver":
+      return "MT";
+    case "America/Phoenix":
+      return "MST";
+    case "America/Los_Angeles":
+      return "PT";
+    default: return "?";
+  }
+}
+
 function formatStationName(station) {
-  return station.name.replace(/ Station$/i, "").replace(/ Amtrak$/i, "").replace(/ Moynihan Train Hall at/i, "").replace(/ Transportation Center$/i, "").replace(/ Regional$/i, "");
+  var stationName = station.name.replace(/ Station$/i, "").replace(/ Union$/i, "").replace(/ Amtrak$/i, "").replace(/ Moynihan Train Hall at/i, "").replace(/ Transportation Center$/i, "").replace(/ Regional$/i, "");
+  return station.stop_id + " | " + stationName + " (" + formatTimeZoneName(station.timezone) + ")";
 }
 
 function formatStopTime(stop) {
@@ -73,7 +90,7 @@ function renderChart(data) {
   } = data;
 
   const formattedTrips = trips.map(trip => ({
-    number: trip.trip_id,
+    number: trip.trip_short_name,
     direction: trip.direction_id,
     trip_headsign: trip.trip_headsign,
     stops: geStopsFromStoptimes(trip.stoptimes, stations)
@@ -183,7 +200,7 @@ function renderChart(data) {
       .on('mouseout', () => tooltip.style('display', 'none'))
       .on('mouseover', d => {
         tooltip.style('display', null);
-        line1.text(`Trip ${d.trip.number} to ${d.trip.trip_headsign}`);
+        line1.text(`Train ${d.trip.number} to ${d.trip.trip_headsign}`);
         line2.text(formatStationName(d.stop.station));
         line3.text(formatStopTime(d.stop));
         path.attr('stroke', 'rgb(34, 34, 34)');
@@ -213,7 +230,7 @@ function renderChart(data) {
   svg.append('g')
     .call(yAxis);
 
-  const startOfFirstDay = moment(d3.extent(stops, s => s.stop.time)[0]).startOf('day').subtract(5, 'hours');
+  const startOfFirstDay = moment(d3.extent(stops, s => s.stop.time)[0]).utc().startOf('day');
 
   svg.append("linearGradient")
       .attr("id", "line-gradient")
@@ -246,6 +263,7 @@ function renderChart(data) {
 
   vehicle.append('path')
     .attr('fill', 'none')
+    .attr('stroke-width', 2.5)
     .attr('stroke', d => 'url(#line-gradient)')
     .attr('d', d => line(d.stops));
 
