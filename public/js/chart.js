@@ -91,7 +91,7 @@ function renderChart(data) {
 ]);
 
   const formattedTrips = trips.map(trip => ({
-    id: trip.trip_id,
+    id: `${trip.start_day}_${trip.trip_id}`,
     number: trip.trip_short_name,
     direction: trip.direction_id,
     trip_headsign: shortenStationName(trip.trip_headsign),
@@ -105,7 +105,7 @@ function renderChart(data) {
 
   const chartTimezone = getChartTimezone(stations);
 
-  const height = 1200;
+  const height = 3000;
   const width = 800;
   const topMargin = 20 + (_.max(_.map(stations, station => formatStationName(station).length)) * 4.6);
   const margin = ({ top: topMargin, right: 30, bottom: topMargin, left: 50 });
@@ -166,10 +166,11 @@ function renderChart(data) {
     .call(g => g.select('.domain').remove())
     .call(g => g.selectAll('.tick line').clone().lower()
       .attr('stroke-opacity', 0.2)
-      .attr('x2', width));
+      .attr('x2', width)
+      .attr('stroke-width', d => moment(d).tz(chartTimezone).format('H') % 6 == 0 ? 2.5 : 1));
 
   const voronoi = d3.Delaunay
-    .from(stops, d => x(d.stop.station.distance), d => y(d.stop.time))
+    .from(stops, d => { console.log(d.stop); return x(d.stop.station.distance) }, d => y(d.stop.time))
     .voronoi([0, 0, width, height]);
 
   const tooltip = g => {
@@ -277,12 +278,16 @@ function renderChart(data) {
     .attr('d', d => line(d.stops));
 
   vehicle.append('text')
+    .style('font', 'bold 12px "Roboto", sans-serif')
+    .attr('fill', 'rgb(94, 94, 94)')
     .attr('transform', 'translate(0,-3)')
     .append('textPath')
     .attr('xlink:href', d => `#${d.id}`)
-    .attr('startOffset', '50%')
+    .attr('startOffset', '20%')
     .style('text-anchor', 'middle')
-    .text(d => d.number);
+    .text(d => d.number)
+    .clone(true)
+    .attr('startOffset', '80%');
 
   vehicle.append('g')
     .attr('stroke', 'white')
