@@ -72,6 +72,18 @@ function getPrimaryDirectionId(stations) {
   return largestDirectionGroup[0].direction_id;
 }
 
+function getChartTimezone(stations) {
+  var counts = {}
+  stations.map((station) => station.timezone).forEach(function(timezone) {
+    if(counts[timezone] === undefined) {
+      counts[timezone] = 0
+    }
+    counts[timezone] += 1
+  })
+  const max = Math.max.apply(null, Object.values(counts));
+  return Object.keys(counts).find(key => counts[key] === max);
+}
+
 function renderChart(data) {
   const {
     trips,
@@ -99,7 +111,7 @@ function renderChart(data) {
     stop
   })));
 
-  const chartTimezone = stops.map((stop) => stop.stop.station.timezone).reduce((tz1, tz2) => (tz1 == tz2 ? tz1 : 'America/Chicago'));
+  const chartTimezone = getChartTimezone(stations);
 
   const height = 1200;
   const width = 800;
