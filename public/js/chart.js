@@ -45,22 +45,6 @@ function geStopsFromStoptimes(stoptimes, stations) {
   return stops[0].station.distance < stops[stops.length - 1].station.distance ? stops : stops.reverse();
 }
 
-function formatTimeZoneName(name) {
-  switch (name) {
-    case "America/New_York":
-      return "Eastern";
-    case "America/Chicago":
-      return "Central";
-    case "America/Denver":
-      return "Mountain";
-    case "America/Phoenix":
-      return "Arizona";
-    case "America/Los_Angeles":
-      return "Pacific";
-    default: return "?";
-  }
-}
-
 function shortenStationName(name) {
   return name.replace(/ Station$/i, "").replace(/ Union$/i, "").replace(/ Amtrak$/i, "").replace(/ Moynihan Train Hall at/i, "").replace(/ Transportation Center$/i, "").replace(/ Regional$/i, "");
 }
