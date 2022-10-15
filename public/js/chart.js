@@ -1,14 +1,6 @@
 /* global _, d3, moment, fetch, chartData */
 /* eslint no-var: "off", prefer-arrow-callback: "off", no-unused-vars: "off" */
 
-function parseTime(string) {
-  string = `0${string}`.slice(-8);
-  const day = Math.floor(string.slice(0,2) / 24);
-  const hours = `0${string.slice(0,2) % 24}`.slice(-2);
-  const minutes = string.slice(3,5);
-  return moment.tz(`${moment().add(day, 'days').format('YYYY-MM-DD')}T${hours}:${minutes}`, 'YYYY-MM-DDTHH:mm', 'America/New_York').toDate();
-}
-
 function padTimeRange(range) {
   return [
     moment(range[0]).startOf('hour'),
@@ -20,21 +12,21 @@ function geStopsFromStoptimes(stoptimes, stations) {
   /* eslint-disable-next-line unicorn/no-array-reduce */
   const stops = stoptimes.reduce((memo, stoptime) => {
     const station = stations.find(station => station.stop_id === stoptime.stop_id);
-    if (stoptime.arrival_time === stoptime.departure_time) {
+    if (stoptime.arrival_time_utc === stoptime.departure_time_utc) {
       memo.push({
         station,
-        time: parseTime(stoptime.arrival_time),
+        time: new Date(stoptime.arrival_time_utc),
         type: 'stop'
       });
     } else {
       memo.push(
         {
           station,
-          time: parseTime(stoptime.arrival_time),
+          time: new Date(stoptime.arrival_time_utc),
           type: 'arrival'
         }, {
           station,
-          time: parseTime(stoptime.departure_time),
+          time: new Date(stoptime.departure_time_utc),
           type: 'departure'
         }
       );
