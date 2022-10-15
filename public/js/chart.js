@@ -164,13 +164,14 @@ function renderChart(data) {
       .ticks(d3.utcHour)
       .tickFormat((time) => moment(time).tz(chartTimezone).format('ha')))
     .call(g => g.select('.domain').remove())
-    .call(g => g.selectAll('.tick line').clone().lower()
+    .call(g => g.selectAll('.tick line')
+      .attr('stroke-width', d => moment(d).tz(chartTimezone).format('H') % 6 == 0 ? 2.5 : 1)
+      .clone().lower()
       .attr('stroke-opacity', 0.2)
-      .attr('x2', width)
-      .attr('stroke-width', d => moment(d).tz(chartTimezone).format('H') % 6 == 0 ? 2.5 : 1));
+      .attr('x2', width));
 
   const voronoi = d3.Delaunay
-    .from(stops, d => { console.log(d.stop); return x(d.stop.station.distance) }, d => y(d.stop.time))
+    .from(stops, d => x(d.stop.station.distance), d => y(d.stop.time))
     .voronoi([0, 0, width, height]);
 
   const tooltip = g => {
