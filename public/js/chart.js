@@ -18,7 +18,7 @@ function padTimeRange(range) {
 
 function geStopsFromStoptimes(stoptimes, stations) {
   /* eslint-disable-next-line unicorn/no-array-reduce */
-  return stoptimes.reduce((memo, stoptime) => {
+  const stops = stoptimes.reduce((memo, stoptime) => {
     const station = stations.find(station => station.stop_id === stoptime.stop_id);
     if (stoptime.arrival_time === stoptime.departure_time) {
       memo.push({
@@ -42,6 +42,7 @@ function geStopsFromStoptimes(stoptimes, stations) {
 
     return memo;
   }, []);
+  return stops[0].station.distance < stops[stops.length - 1].station.distance ? stops : stops.reverse();
 }
 
 function formatTimeZoneName(name) {
@@ -102,6 +103,7 @@ function renderChart(data) {
 ]);
 
   const formattedTrips = trips.map(trip => ({
+    id: trip.trip_id,
     number: trip.trip_short_name,
     direction: trip.direction_id,
     trip_headsign: shortenStationName(trip.trip_headsign),
@@ -248,28 +250,30 @@ function renderChart(data) {
 
   const startOfFirstDay = moment(d3.extent(stops, s => s.stop.time)[0]).tz(chartTimezone).startOf('day');
 
-  svg.append("linearGradient")
-      .attr("id", "line-gradient")
-      .attr("gradientUnits", "userSpaceOnUse")
-      .attr("x1", 0)
-      .attr("y1", y(startOfFirstDay))
-      .attr("x2", 0)
-      .attr("y2", y(startOfFirstDay.add(4, 'days')))
-      .selectAll("stop")
+  const dayColor = 'palegoldenrod';
+  const nightColor = 'slateblue';
+  svg.append('linearGradient')
+      .attr('id', 'line-gradient')
+      .attr('gradientUnits', 'userSpaceOnUse')
+      .attr('x1', 0)
+      .attr('y1', y(startOfFirstDay))
+      .attr('x2', 0)
+      .attr('y2', y(startOfFirstDay.add(4, 'days')))
+      .selectAll('stop')
         .data([
-          {offset: "0%", color: "slateblue"},
-          {offset: "12.5%", color: "palegoldenrod"},
-          {offset: "25%", color: "slateblue"},
-          {offset: "37.5%", color: "palegoldenrod"},
-          {offset: "50%", color: "slateblue"},
-          {offset: "62.5%", color: "palegoldenrod"},
-          {offset: "75%", color: "slateblue"},
-          {offset: "87.5%", color: "palegoldenrod"},
-          {offset: "100%", color: "slateblue"}
+          {offset: '0%', color: nightColor},
+          {offset: '12.5%', color: dayColor},
+          {offset: '25%', color: nightColor},
+          {offset: '37.5%', color: dayColor},
+          {offset: '50%', color: nightColor},
+          {offset: '62.5%', color: dayColor},
+          {offset: '75%', color: nightColor},
+          {offset: '87.5%', color: dayColor},
+          {offset: '100%', color: nightColor}
         ])
-      .enter().append("stop")
-        .attr("offset", function(d) { return d.offset; })
-        .attr("stop-color", function(d) { return d.color; });
+      .enter().append('stop')
+        .attr('offset', function(d) { return d.offset; })
+        .attr('stop-color', function(d) { return d.color; });
 
   const vehicle = svg.append('g')
     .attr('stroke-width', 1.5)
@@ -278,10 +282,19 @@ function renderChart(data) {
     .join('g');
 
   vehicle.append('path')
+    .attr('id', d => d.id)
     .attr('fill', 'none')
     .attr('stroke-width', 2.5)
     .attr('stroke', d => 'url(#line-gradient)')
     .attr('d', d => line(d.stops));
+
+  vehicle.append('text')
+    .attr('transform', 'translate(0,-3)')
+    .append('textPath')
+    .attr('xlink:href', d => `#${d.id}`)
+    .attr('startOffset', '50%')
+    .style('text-anchor', 'middle')
+    .text(d => d.number);
 
   vehicle.append('g')
     .attr('stroke', 'white')
