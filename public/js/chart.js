@@ -38,7 +38,7 @@ function geStopsFromStoptimes(stoptimes, stations) {
 }
 
 function shortenStationName(name) {
-  return name.replace(/ Station$/i, "").replace(/ Union$/i, "").replace(/ Amtrak$/i, "").replace(/ Moynihan Train Hall at/i, "").replace(/ Transportation Center$/i, "").replace(/ Regional$/i, "");
+  return name.replace(/ Passenger Terminal$/i, "").replace(/ Station$/i, "").replace(/ Union$/i, "").replace(/ Amtrak$/i, "").replace(/ Moynihan Train Hall at/i, "").replace(/ Transportation Center$/i, "").replace(/ Regional$/i, "");
 }
 
 function formatStationName(station) {
@@ -105,7 +105,7 @@ function renderChart(data) {
 
   const chartTimezone = getChartTimezone(stations);
 
-  const height = 3000;
+  const height = 2000;
   const width = 800;
   const topMargin = 20 + (_.max(_.map(stations, station => formatStationName(station).length)) * 4.6);
   const margin = ({ top: topMargin, right: 30, bottom: topMargin, left: 50 });
@@ -139,11 +139,29 @@ function renderChart(data) {
       .attr('y2', height - margin.bottom)
       .attr('stroke', 'currentColor'))
     .call(g => g.append('line')
-      .attr('y1', margin.top)
-      .attr('y2', height - margin.bottom)
+      .attr('id', d => d.stop_id)
+      .attr('y2', margin.top)
+      .attr('y1', height - margin.bottom)
       .attr('stroke-opacity', 0.2)
       .attr('stroke-dasharray', '1.5,2')
       .attr('stroke', 'currentColor'))
+    .call(g => g.append('text')
+      .style('font', 'bold 9px "Roboto", sans-serif')
+      .attr('fill', 'rgb(194, 194, 194)')
+      .attr('transform', 'translate(-2,0)')
+      .append('textPath')
+      .attr('xlink:href', d => `#${d.stop_id}`)
+      .style('text-anchor', 'middle')
+      .text(d => d.stop_id)
+      .attr('startOffset', '17%')
+      .clone(true)
+      .attr('startOffset', '33%')
+      .clone(true)
+      .attr('startOffset', '50%')
+      .clone(true)
+      .attr('startOffset', '67%')
+      .clone(true)
+      .attr('startOffset', '83%'))
     .call(g => g.append('text')
       .attr('transform', `translate(0,${margin.top}) rotate(-90)`)
       .attr('x', 12)
@@ -158,7 +176,7 @@ function renderChart(data) {
       .text(formatStationName));
 
   const yAxis = g => g
-    .style('font', '10px "Roboto Condensed", sans-serif')
+    .style('font', 'bold 11px "Roboto Condensed", sans-serif')
     .attr('transform', `translate(${margin.left},0)`)
     .call(d3.axisLeft(y)
       .ticks(d3.utcHour)
@@ -228,7 +246,7 @@ function renderChart(data) {
 
   const svg = d3.select('#chart')
     .append('p')
-    .text(`All times ${moment().tz(chartTimezone).zoneAbbr()} unless otherwise specified`)
+    .text(`All times ${moment().tz(chartTimezone).zoneAbbr()} unless otherwise specified. Hover over stop for local time.`)
     .append('svg')
     .attr('viewBox', [0, 0, width, height]);
 
@@ -279,16 +297,16 @@ function renderChart(data) {
     .attr('d', d => line(d.stops));
 
   vehicle.append('text')
-    .style('font', 'bold 12px "Roboto", sans-serif')
+    .style('font', 'bold 10px "Roboto", sans-serif')
     .attr('fill', 'rgb(94, 94, 94)')
-    .attr('transform', 'translate(0,-3)')
+    .attr('transform', 'translate(0,-4)')
     .append('textPath')
     .attr('xlink:href', d => `#${d.id}`)
-    .attr('startOffset', '20%')
+    .attr('startOffset', '30%')
     .style('text-anchor', 'middle')
     .text(d => d.number)
     .clone(true)
-    .attr('startOffset', '80%');
+    .attr('startOffset', '70%');
 
   vehicle.append('g')
     .attr('stroke', 'white')
