@@ -280,37 +280,47 @@ function renderChart(data) {
           {offset: '100%', color: nightColor}
         ])
       .enter().append('stop')
-        .attr('offset', function(d) { return d.offset; })
-        .attr('stop-color', function(d) { return d.color; });
+        .attr('offset', d => d.offset)
+        .attr('stop-color', d => d.color);
 
-  const vehicle = svg.append('g')
-    .attr('stroke-width', 1.5)
+  const vehiclePath = svg.append('g')
+    .attr('stroke-width', 2.5)
+    .attr('fill', 'none')
     .selectAll('g')
     .data(formattedTrips)
     .join('g');
 
-  vehicle.append('path')
+  vehiclePath.append('path')
     .attr('id', d => d.id)
-    .attr('fill', 'none')
-    .attr('stroke-width', 2.5)
     .attr('stroke', d => 'url(#line-gradient)')
     .attr('d', d => line(d.stops));
 
-  vehicle.append('text')
+  const vehicleText = svg.append('g')
     .style('font', 'bold 10px "Roboto", sans-serif')
     .attr('fill', 'rgb(114, 114, 114)')
     .attr('transform', 'translate(0,-4)')
+    .selectAll('g')
+    .data(formattedTrips)
+    .join('g');
+
+  vehicleText.append('text')
     .append('textPath')
     .attr('xlink:href', d => `#${d.id}`)
-    .attr('startOffset', d => d.number % 2 == 0 ? '20%' : '30%')
     .style('text-anchor', 'middle')
     .text(d => d.number)
+    .attr('startOffset', d => d.number % 2 == 0 ? '20%' : '30%')
     .clone(true)
     .attr('startOffset', d => d.number % 2 == 0 ? '70%' : '80%');
 
-  vehicle.append('g')
+  const vehicleStops = svg.append('g')
+    .attr('stroke-width', 1.5)
     .attr('stroke', 'white')
     .attr('fill', d => 'rgb(34, 34, 34)')
+    .selectAll('g')
+    .data(formattedTrips)
+    .join('g');
+
+  vehicleStops.append('g')
     .selectAll('path')
     .data(d => d.stops)
     .join('path')
