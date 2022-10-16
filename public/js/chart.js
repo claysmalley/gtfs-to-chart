@@ -298,15 +298,15 @@ function renderChart(data) {
 
   vehicle.append('text')
     .style('font', 'bold 10px "Roboto", sans-serif')
-    .attr('fill', 'rgb(94, 94, 94)')
+    .attr('fill', 'rgb(114, 114, 114)')
     .attr('transform', 'translate(0,-4)')
     .append('textPath')
     .attr('xlink:href', d => `#${d.id}`)
-    .attr('startOffset', '30%')
+    .attr('startOffset', d => d.number % 2 == 0 ? '20%' : '30%')
     .style('text-anchor', 'middle')
     .text(d => d.number)
     .clone(true)
-    .attr('startOffset', '70%');
+    .attr('startOffset', d => d.number % 2 == 0 ? '70%' : '80%');
 
   vehicle.append('g')
     .attr('stroke', 'white')
