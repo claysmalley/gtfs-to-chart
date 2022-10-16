@@ -8,11 +8,14 @@ function padTimeRange(range) {
   ];
 }
 
-function geStopsFromStoptimes(stoptimes, stations) {
+function geStopsFromStoptimes(stoptimes, stations, firstStopTime) {
   /* eslint-disable-next-line unicorn/no-array-reduce */
+  const startCutoff = moment(firstStopTime).add(47, 'hours');
+  const endCutoff = moment(firstStopTime).add(121, 'hours');
   const stops = stoptimes.reduce((memo, stoptime) => {
     const station = stations.find(station => station.stop_id === stoptime.stop_id);
-    if (station) {
+    const arrival = moment(stoptime.arrival_time_utc);
+    if (station && arrival.isAfter(startCutoff) && arrival.isBefore(endCutoff)) {
       if (stoptime.arrival_time_utc === stoptime.departure_time_utc) {
         memo.push({
           station,
@@ -36,7 +39,7 @@ function geStopsFromStoptimes(stoptimes, stations) {
 
     return memo;
   }, []);
-  return stops[0].station.distance < stops[stops.length - 1].station.distance ? stops : stops.reverse();
+  return stops.length === 0 ? [] : stops[0].station.distance < stops[stops.length - 1].station.distance ? stops : stops.reverse();
 }
 
 function shortenStationName(name) {
@@ -92,12 +95,14 @@ function renderChart(data) {
   "America/Phoenix|LMT MST MDT MWT|7s.i 70 60 60|012121313121|-3tFF0 1nEe0 1nX0 11B0 1nX0 SgN0 4Al1 Ap0 1db0 SWqX 1cL0|42e5",
 ]);
 
+  const firstStopTime = _.min(trips.flatMap(trip => trip.stoptimes.map(stoptime => moment(stoptime.arrival_time_utc))));
+
   const formattedTrips = trips.map(trip => ({
     id: `${trip.start_day}_${trip.trip_id}`,
     number: trip.trip_short_name,
     direction: trip.direction_id,
     trip_headsign: shortenStationName(trip.trip_headsign),
-    stops: geStopsFromStoptimes(trip.stoptimes, stations)
+    stops: geStopsFromStoptimes(trip.stoptimes, stations, firstStopTime)
   }));
 
   const stops = formattedTrips.flatMap(trip => trip.stops.map(stop => ({
