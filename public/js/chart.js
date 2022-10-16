@@ -293,11 +293,20 @@ function renderChart(data) {
   vehicle.append('g')
     .attr('stroke', 'white')
     .attr('fill', d => 'rgb(34, 34, 34)')
-    .selectAll('circle')
+    .selectAll('path')
     .data(d => d.stops)
-    .join('circle')
+    .join('path')
     .attr('transform', d => `translate(${x(d.station.distance)},${y(d.time)})`)
-    .attr('r', 2.5);
+    .attr('d', d => {
+      switch (d.type) {
+        case 'arrival':
+        return " M -2.5 1 L -2.5 0 A 2.5 2.5 0 0 1 2.5 0 L 2.5 1";
+        case 'departure':
+        return " M 2.5 -1 L 2.5 0 A 2.5 2.5 0 0 1 -2.5 0 L -2.5 -1";
+        default:
+        return " M 2.5 0 A 2.5 2.5 0 1 1 -2.5 0 A 2.5 2.5 0 1 1 2.5 0 z";
+      }
+    });
 
   svg.append('g')
     .call(tooltip);
