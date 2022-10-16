@@ -12,24 +12,26 @@ function geStopsFromStoptimes(stoptimes, stations) {
   /* eslint-disable-next-line unicorn/no-array-reduce */
   const stops = stoptimes.reduce((memo, stoptime) => {
     const station = stations.find(station => station.stop_id === stoptime.stop_id);
-    if (stoptime.arrival_time_utc === stoptime.departure_time_utc) {
-      memo.push({
-        station,
-        time: new Date(stoptime.arrival_time_utc),
-        type: 'stop'
-      });
-    } else {
-      memo.push(
-        {
+    if (station) {
+      if (stoptime.arrival_time_utc === stoptime.departure_time_utc) {
+        memo.push({
           station,
           time: new Date(stoptime.arrival_time_utc),
-          type: 'arrival'
-        }, {
-          station,
-          time: new Date(stoptime.departure_time_utc),
-          type: 'departure'
-        }
-      );
+          type: 'stop'
+        });
+      } else {
+        memo.push(
+          {
+            station,
+            time: new Date(stoptime.arrival_time_utc),
+            type: 'arrival'
+          }, {
+            station,
+            time: new Date(stoptime.departure_time_utc),
+            type: 'departure'
+          }
+        );
+      }
     }
 
     return memo;
@@ -311,6 +313,10 @@ function renderChart(data) {
     .attr('startOffset', d => d.number % 2 == 0 ? '20%' : '30%')
     .clone(true)
     .attr('startOffset', d => d.number % 2 == 0 ? '70%' : '80%');
+
+  vehicleText.clone(true).lower()
+    .attr('stroke-width', '3')
+    .attr('stroke', 'white');
 
   const vehicleStops = svg.append('g')
     .attr('stroke-width', 1.5)
