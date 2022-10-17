@@ -10,8 +10,8 @@ function padTimeRange(range) {
 
 function geStopsFromStoptimes(stoptimes, stations, firstStopTime) {
   /* eslint-disable-next-line unicorn/no-array-reduce */
-  const startCutoff = moment(firstStopTime).add(47, 'hours');
-  const endCutoff = moment(firstStopTime).add(121, 'hours');
+  const startCutoff = moment(firstStopTime).add(2, 'days');
+  const endCutoff = moment(firstStopTime).add(5, 'days');
   const stops = stoptimes.reduce((memo, stoptime) => {
     const station = stations.find(station => station.stop_id === stoptime.stop_id);
     const arrival = moment(stoptime.arrival_time_utc);
@@ -91,7 +91,9 @@ function renderChart(data) {
   "America/Phoenix|LMT MST MDT MWT|7s.i 70 60 60|012121313121|-3tFF0 1nEe0 1nX0 11B0 1nX0 SgN0 4Al1 Ap0 1db0 SWqX 1cL0|42e5",
 ]);
 
-  const firstStopTime = _.min(trips.flatMap(trip => trip.stoptimes.map(stoptime => moment(stoptime.arrival_time_utc))));
+  const chartTimezone = getChartTimezone(stations);
+
+  const firstStopTime = _.min(trips.flatMap(trip => trip.stoptimes.map(stoptime => moment(stoptime.arrival_time_utc)))).tz(chartTimezone).startOf('day');
 
   const formattedTrips = trips.map(trip => ({
     id: `${trip.start_day}_${trip.trip_id}`,
@@ -105,8 +107,6 @@ function renderChart(data) {
     trip,
     stop
   })));
-
-  const chartTimezone = getChartTimezone(stations);
 
   const height = 2000;
   const width = 120 + 15 * stations.length;
