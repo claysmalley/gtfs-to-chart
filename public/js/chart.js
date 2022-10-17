@@ -46,14 +46,6 @@ function shortenStationName(name) {
   return name.replace(/ Passenger Terminal$/i, "").replace(/ Station$/i, "").replace(/ Union$/i, "").replace(/ Amtrak$/i, "").replace(/ Moynihan Train Hall at/i, "").replace(/ Transportation Center$/i, "").replace(/ Regional$/i, "");
 }
 
-function formatStationName(station) {
-  return `${station.stop_id} | ${shortenStationName(station.name)}`;
-}
-
-function reverseFormatStationName(station) {
-  return `${shortenStationName(station.name)} | ${station.stop_id}`;
-}
-
 function formatStopTime(stop) {
   let formattedTime = '';
 
@@ -118,8 +110,8 @@ function renderChart(data) {
 
   const height = 2000;
   const width = 120 + 15 * stations.length;
-  const topMargin = 20 + (_.max(_.map(stations, station => formatStationName(station).length)) * 4.6);
-  const margin = ({ top: topMargin, right: 60, bottom: topMargin, left: 60 });
+  const topMargin = 20 + (_.max(_.map(stations, station => `${station.stop_id} | ${shortenStationName(station.name)}`.length)) * 6.0);
+  const margin = ({ top: topMargin, right: 60, bottom: topMargin, left: 80 });
 
   const primaryDirectionId = getPrimaryDirectionId(stations);
 
@@ -136,7 +128,7 @@ function renderChart(data) {
     .range([margin.top, height - margin.bottom]);
 
   const xAxis = g => g
-    .style('font', '10px Roboto, sans-serif')
+    .style('font', '14px "Roboto Condensed", sans-serif')
     .selectAll('g')
     .data(stations)
     .join('g')
@@ -157,7 +149,7 @@ function renderChart(data) {
       .attr('stroke-dasharray', '1.5,2')
       .attr('stroke', 'currentColor'))
     .call(g => g.append('text')
-      .style('font', 'bold 9px "Roboto", sans-serif')
+      .style('font', 'bold 14px "Roboto", sans-serif')
       .attr('opacity', 0.2)
       .attr('fill', 'currentColor')
       .attr('transform', 'translate(-2,0)')
@@ -179,7 +171,7 @@ function renderChart(data) {
       .attr('fill', 'currentColor')
       .attr('x', 12)
       .attr('dy', '0.35em')
-      .text(formatStationName))
+      .text(d => `${d.stop_id} | ${shortenStationName(d.name)}`))
     .style('display', d => d.direction_id === primaryDirectionId ? 'block' : 'none')
     .call(g => g.append('text')
       .attr('text-anchor', 'end')
@@ -187,10 +179,10 @@ function renderChart(data) {
       .attr('fill', 'currentColor')
       .attr('x', -12)
       .attr('dy', '0.35em')
-      .text(reverseFormatStationName));
+      .text(d => `${shortenStationName(d.name)} | ${d.stop_id}`));
 
   const yAxis = g => g
-    .style('font', '11px "Roboto Condensed", sans-serif')
+    .style('font', '14px Roboto, sans-serif')
     .attr('transform', `translate(${margin.left},0)`)
     .call(d3.axisLeft(y)
       .ticks(d3.utcHour)
@@ -213,7 +205,7 @@ function renderChart(data) {
 
   const tooltip = g => {
     const tooltip = g.append('g')
-      .style('font', '10px "Roboto Condensed", sans-serif');
+      .style('font', '14px "Roboto Condensed", sans-serif');
 
     const path = tooltip.append('path')
       .attr('fill', 'white');
@@ -244,7 +236,7 @@ function renderChart(data) {
       .on('mouseover', d => {
         tooltip.style('display', null);
         line1.text(`Train ${d.trip.number} to ${d.trip.trip_headsign}`);
-        line2.text(formatStationName(d.stop.station));
+        line2.text(`${d.stop.station.stop_id} | ${shortenStationName(d.stop.station.name)}`);
         line3.text(formatStopTime(d.stop));
         path.attr('stroke', 'rgb(34, 34, 34)');
         const box = text.node().getBBox();
@@ -316,7 +308,7 @@ function renderChart(data) {
     .attr('d', d => line(d.stops));
 
   const vehicleText = svg.append('g')
-    .style('font', 'bold 10px "Roboto", sans-serif')
+    .style('font', 'bold 14px "Roboto", sans-serif')
     .attr('fill', 'currentColor')
     .attr('transform', 'translate(0,-4)')
     .selectAll('g')
