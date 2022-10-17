@@ -50,6 +50,10 @@ function formatStationName(station) {
   return `${station.stop_id} | ${shortenStationName(station.name)}`;
 }
 
+function reverseFormatStationName(station) {
+  return `${shortenStationName(station.name)} | ${station.stop_id}`;
+}
+
 function formatStopTime(stop) {
   let formattedTime = '';
 
@@ -113,9 +117,9 @@ function renderChart(data) {
   const chartTimezone = getChartTimezone(stations);
 
   const height = 2000;
-  const width = 800;
+  const width = 120 + 15 * stations.length;
   const topMargin = 20 + (_.max(_.map(stations, station => formatStationName(station).length)) * 4.6);
-  const margin = ({ top: topMargin, right: 30, bottom: topMargin, left: 50 });
+  const margin = ({ top: topMargin, right: 60, bottom: topMargin, left: 60 });
 
   const primaryDirectionId = getPrimaryDirectionId(stations);
 
@@ -132,7 +136,7 @@ function renderChart(data) {
     .range([margin.top, height - margin.bottom]);
 
   const xAxis = g => g
-    .style('font', '10px "Roboto Condensed", sans-serif')
+    .style('font', '10px Roboto, sans-serif')
     .selectAll('g')
     .data(stations)
     .join('g')
@@ -154,7 +158,8 @@ function renderChart(data) {
       .attr('stroke', 'currentColor'))
     .call(g => g.append('text')
       .style('font', 'bold 9px "Roboto", sans-serif')
-      .attr('fill', 'rgb(194, 194, 194)')
+      .attr('opacity', 0.2)
+      .attr('fill', 'currentColor')
       .attr('transform', 'translate(-2,0)')
       .append('textPath')
       .attr('xlink:href', d => `#${d.stop_id}`)
@@ -170,30 +175,37 @@ function renderChart(data) {
       .clone(true)
       .attr('startOffset', '83%'))
     .call(g => g.append('text')
-      .attr('transform', `translate(0,${margin.top}) rotate(-90)`)
+      .attr('transform', `translate(-5,${margin.top}) rotate(-70)`)
+      .attr('fill', 'currentColor')
       .attr('x', 12)
       .attr('dy', '0.35em')
       .text(formatStationName))
     .style('display', d => d.direction_id === primaryDirectionId ? 'block' : 'none')
     .call(g => g.append('text')
       .attr('text-anchor', 'end')
-      .attr('transform', `translate(0,${height - margin.top}) rotate(-90)`)
+      .attr('transform', `translate(5,${height - margin.top}) rotate(-70)`)
+      .attr('fill', 'currentColor')
       .attr('x', -12)
       .attr('dy', '0.35em')
-      .text(formatStationName));
+      .text(reverseFormatStationName));
 
   const yAxis = g => g
-    .style('font', 'bold 11px "Roboto Condensed", sans-serif')
+    .style('font', '11px "Roboto Condensed", sans-serif')
     .attr('transform', `translate(${margin.left},0)`)
     .call(d3.axisLeft(y)
       .ticks(d3.utcHour)
-      .tickFormat((time) => moment(time).tz(chartTimezone).format('ha')))
+      .tickFormat((time) => {
+        const timeMoment = moment(time).tz(chartTimezone);
+        return timeMoment.format('H') % 24 == 0 ? timeMoment.format('ddd ha') : timeMoment.format('ha');
+      }))
     .call(g => g.select('.domain').remove())
     .call(g => g.selectAll('.tick line')
       .attr('stroke-width', d => moment(d).tz(chartTimezone).format('H') % 6 == 0 ? 2.5 : 1)
       .clone().lower()
       .attr('stroke-opacity', 0.2)
-      .attr('x2', width));
+      .attr('x2', width))
+    .call(g => g.selectAll('.tick text')
+      .attr('font-weight', d => moment(d).tz(chartTimezone).format('H') % 6 == 0 ? 'bold' : 'regular'));
 
   const voronoi = d3.Delaunay
     .from(stops, d => x(d.stop.station.distance), d => y(d.stop.time))
@@ -252,7 +264,8 @@ function renderChart(data) {
   };
 
   const svg = d3.select('#chart')
-    .append('p')
+    .append('div')
+    .attr('style', `width: ${width}px; max-width: ${width}px;`)
     .text(`All times ${moment().tz(chartTimezone).zoneAbbr()} unless otherwise specified. Hover over stop for local time.`)
     .append('svg')
     .attr('viewBox', [0, 0, width, height]);
@@ -304,7 +317,7 @@ function renderChart(data) {
 
   const vehicleText = svg.append('g')
     .style('font', 'bold 10px "Roboto", sans-serif')
-    .attr('fill', 'rgb(114, 114, 114)')
+    .attr('fill', 'currentColor')
     .attr('transform', 'translate(0,-4)')
     .selectAll('g')
     .data(formattedTrips)
@@ -321,12 +334,12 @@ function renderChart(data) {
 
   vehicleText.clone(true).lower()
     .attr('stroke-width', '3')
-    .attr('stroke', 'white');
+    .attr('stroke', '#333333');
 
   const vehicleStops = svg.append('g')
     .attr('stroke-width', 1.5)
-    .attr('stroke', 'white')
-    .attr('fill', d => 'rgb(34, 34, 34)')
+    .attr('stroke', '#333333')
+    .attr('fill', d => 'white')
     .selectAll('g')
     .data(formattedTrips)
     .join('g');
@@ -339,11 +352,11 @@ function renderChart(data) {
     .attr('d', d => {
       switch (d.type) {
         case 'arrival':
-        return " M -2.5 1 L -2.5 0 A 2.5 2.5 0 0 1 2.5 0 L 2.5 1 z";
+        return ' M -2.5 1 L -2.5 0 A 2.5 2.5 0 0 1 2.5 0 L 2.5 1 z';
         case 'departure':
-        return " M 2.5 -1 L 2.5 0 A 2.5 2.5 0 0 1 -2.5 0 L -2.5 -1 z";
+        return ' M 2.5 -1 L 2.5 0 A 2.5 2.5 0 0 1 -2.5 0 L -2.5 -1 z';
         default:
-        return " M 2.5 0 A 2.5 2.5 0 1 1 -2.5 0 A 2.5 2.5 0 1 1 2.5 0 z";
+        return ' M 2.5 0 A 2.5 2.5 0 1 1 -2.5 0 A 2.5 2.5 0 1 1 2.5 0 z';
       }
     });
 
