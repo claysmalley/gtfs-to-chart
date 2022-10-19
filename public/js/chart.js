@@ -10,8 +10,8 @@ function padTimeRange(range) {
 
 function geStopsFromStoptimes(stoptimes, stations, startOfFirstTrip, days) {
   /* eslint-disable-next-line unicorn/no-array-reduce */
-  const startCutoff = moment(startOfFirstTrip).add(2, 'days').subtract(1, 'hour');
-  const endCutoff = moment(startOfFirstTrip).add(2 + days, 'days').add(1, 'hour');
+  const startCutoff = moment(startOfFirstTrip).add(2, 'days').subtract(30, 'minutes');
+  const endCutoff = moment(startOfFirstTrip).add(2 + days, 'days').add(30, 'minutes');
   const stops = stoptimes.reduce((memo, stoptime) => {
     const station = stations.find(station => station.stop_id === stoptime.stop_id);
     const arrival = moment(stoptime.arrival_time_utc);
@@ -44,7 +44,7 @@ function geStopsFromStoptimes(stoptimes, stations, startOfFirstTrip, days) {
 }
 
 function shortenStationName(name) {
-  return name.replace(/ Passenger Terminal$/i, "").replace(/ Station$/i, "").replace(/ Union$/i, "").replace(/ Amtrak$/i, "").replace(/ Moynihan Train Hall at/i, "").replace(/ Transportation Center$/i, "").replace(/ Regional$/i, "");
+  return name.replace(/ Passenger Terminal$/i, "").replace(/ Station$/i, "").replace(/ Auto Train$/i, "").replace(/ Union$/i, "").replace(/ Amtrak$/i, "").replace(/ Moynihan Train Hall at/i, "").replace(/ Transportation Center$/i, "").replace(/ Regional$/i, "");
 }
 
 function formatStopTime(stop) {
@@ -111,7 +111,7 @@ function renderChart(data) {
 
   const height = 2000;
   const width = 120 + 15 * stations.length;
-  const topMargin = 20 + (_.max(_.map(stations, station => `${station.stop_id} | ${shortenStationName(station.name)}`.length)) * 6.0);
+  const topMargin = 20 + (_.max(_.map(stations, station => `${station.stop_id} | ${station.stop_short_name}`.length)) * 6.0);
   const margin = ({ top: topMargin, right: 60, bottom: topMargin, left: 80 });
 
   const primaryDirectionId = getPrimaryDirectionId(stations);
@@ -172,7 +172,7 @@ function renderChart(data) {
       .attr('fill', 'currentColor')
       .attr('x', 12)
       .attr('dy', '0.35em')
-      .text(d => `${d.stop_id} | ${shortenStationName(d.name)}`))
+      .text(d => `${d.stop_id} | ${d.stop_short_name}, ${d.state}`))
     .style('display', d => d.direction_id === primaryDirectionId ? 'block' : 'none')
     .call(g => g.append('text')
       .attr('text-anchor', 'end')
@@ -180,7 +180,7 @@ function renderChart(data) {
       .attr('fill', 'currentColor')
       .attr('x', -12)
       .attr('dy', '0.35em')
-      .text(d => `${shortenStationName(d.name)} | ${d.stop_id}`));
+      .text(d => `${d.stop_short_name}, ${d.state} | ${d.stop_id}`));
 
   const yAxis = g => g
     .style('font', '14px Roboto, sans-serif')
@@ -237,7 +237,7 @@ function renderChart(data) {
       .on('mouseover', d => {
         tooltip.style('display', null);
         line1.text(`Train ${d.trip.number} to ${d.trip.trip_headsign}`);
-        line2.text(`${d.stop.station.stop_id} | ${shortenStationName(d.stop.station.name)}`);
+        line2.text(`${d.stop.station.stop_id} | ${d.stop.station.stop_short_name}`);
         line3.text(formatStopTime(d.stop));
         path.attr('stroke', 'rgb(34, 34, 34)');
         const box = text.node().getBBox();
