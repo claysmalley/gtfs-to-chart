@@ -160,15 +160,9 @@ function renderChart(data) {
       .attr('xlink:href', d => `#${d.stop_id}`)
       .style('text-anchor', 'middle')
       .text(d => d.stop_id)
-      .attr('startOffset', '17%')
+      .attr('startOffset', '30%')
       .clone(true)
-      .attr('startOffset', '33%')
-      .clone(true)
-      .attr('startOffset', '50%')
-      .clone(true)
-      .attr('startOffset', '67%')
-      .clone(true)
-      .attr('startOffset', '83%'))
+      .attr('startOffset', '63%'))
     .call(g => g.append('text')
       .attr('transform', `translate(-5,${margin.top}) rotate(-70)`)
       .attr('fill', 'currentColor')
@@ -209,7 +203,7 @@ function renderChart(data) {
       .ticks(d3.utcHour)
       .tickFormat((time) => {
         const timeMoment = moment(time).tz(chartTimezone);
-        return timeMoment.format('H') % 24 == 0 ? timeMoment.format('ddd ha') : timeMoment.format('ha');
+        return timeMoment.format('H') % 12 == 0 ? timeMoment.format('ddd ha') : timeMoment.format('ha');
       }))
     .call(g => g.select('.domain').remove())
     .call(g => g.selectAll('.tick line')
@@ -263,7 +257,7 @@ function renderChart(data) {
         tooltip.style('display', null);
         line1.text(`${d.trip.route_long_name} ${d.trip.number}`);
         line2.text(`to ${d.trip.trip_headsign}`);
-        line3.text(`${d.stop.station.stop_id} | ${d.stop.station.stop_short_name}`);
+        line3.text(`${d.stop.station.stop_id} | ${d.stop.station.stop_short_name}, ${d.stop.station.state}`);
         line4.text(formatStopTime(d.stop));
         path.attr('stroke', 'rgb(34, 34, 34)');
         const box = text.node().getBBox();
