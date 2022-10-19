@@ -101,7 +101,9 @@ function renderChart(data) {
     number: trip.trip_short_name,
     direction: trip.direction_id,
     trip_headsign: shortenStationName(trip.trip_headsign),
-    stops: geStopsFromStoptimes(trip.stoptimes, stations, startOfFirstTrip, 3)
+    stops: geStopsFromStoptimes(trip.stoptimes, stations, startOfFirstTrip, 3),
+    route_id: trip.route_id,
+    route_long_name: trip.route_long_name,
   }));
 
   const stops = formattedTrips.flatMap(trip => trip.stops.map(stop => ({
@@ -112,7 +114,7 @@ function renderChart(data) {
   const height = 2000;
   const width = 120 + 15 * stations.length;
   const topMargin = 20 + (_.max(_.map(stations, station => `${station.stop_id} | ${station.stop_short_name}`.length)) * 6.0);
-  const margin = ({ top: topMargin, right: 60, bottom: topMargin, left: 80 });
+  const margin = ({ top: topMargin, right: 70, bottom: topMargin, left: 80 });
 
   const primaryDirectionId = getPrimaryDirectionId(stations);
 
@@ -172,15 +174,33 @@ function renderChart(data) {
       .attr('fill', 'currentColor')
       .attr('x', 12)
       .attr('dy', '0.35em')
-      .text(d => `${d.stop_id} | ${d.stop_short_name}, ${d.state}`))
-    .style('display', d => d.direction_id === primaryDirectionId ? 'block' : 'none')
+      .call(text => {
+        text.append('tspan')
+          .style('font', 'bold 14px Roboto, sans-serif')
+          .text(d => `${d.stop_id}`);
+        text.append('tspan')
+          .text(d => ` | ${d.stop_short_name}, `);
+        text.append('tspan')
+          .text(d => `${d.state}`);
+      })
+    )
+    .style('display', d => d.stop_id !== 'LKL' && d.direction_id === primaryDirectionId ? 'block' : 'none')
     .call(g => g.append('text')
       .attr('text-anchor', 'end')
       .attr('transform', `translate(5,${height - margin.top}) rotate(-70)`)
       .attr('fill', 'currentColor')
       .attr('x', -12)
       .attr('dy', '0.35em')
-      .text(d => `${d.stop_short_name}, ${d.state} | ${d.stop_id}`));
+      .call(text => {
+        text.append('tspan')
+          .text(d => `${d.stop_short_name}, `);
+        text.append('tspan')
+          .text(d => `${d.state} | `);
+        text.append('tspan')
+          .style('font', 'bold 14px Roboto, sans-serif')
+          .text(d => `${d.stop_id}`);
+      })
+    );
 
   const yAxis = g => g
     .style('font', '14px Roboto, sans-serif')
@@ -220,11 +240,16 @@ function renderChart(data) {
 
     const line2 = text.append('tspan')
       .attr('x', 0)
-      .attr('y', '1.1em');
+      .attr('y', '1.1em')
+      .style('font-weight', 'bold');
 
     const line3 = text.append('tspan')
       .attr('x', 0)
       .attr('y', '2.2em');
+
+    const line4 = text.append('tspan')
+      .attr('x', 0)
+      .attr('y', '3.3em');
 
     g.append('g')
       .attr('fill', 'none')
@@ -236,9 +261,10 @@ function renderChart(data) {
       .on('mouseout', () => tooltip.style('display', 'none'))
       .on('mouseover', d => {
         tooltip.style('display', null);
-        line1.text(`Train ${d.trip.number} to ${d.trip.trip_headsign}`);
-        line2.text(`${d.stop.station.stop_id} | ${d.stop.station.stop_short_name}`);
-        line3.text(formatStopTime(d.stop));
+        line1.text(`${d.trip.route_long_name} ${d.trip.number}`);
+        line2.text(`to ${d.trip.trip_headsign}`);
+        line3.text(`${d.stop.station.stop_id} | ${d.stop.station.stop_short_name}`);
+        line4.text(formatStopTime(d.stop));
         path.attr('stroke', 'rgb(34, 34, 34)');
         const box = text.node().getBBox();
         path.attr('d', `
