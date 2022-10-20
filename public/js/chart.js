@@ -78,6 +78,13 @@ function getChartTimezone(stations) {
   return Object.keys(counts).find(key => counts[key] === max);
 }
 
+function updateDisplay() {
+  const showEven = document.querySelector('input#check_even').checked;
+  const showOdd = document.querySelector('input#check_odd').checked;
+  d3.selectAll('.even').attr('opacity', showEven ? 1 : 0);
+  d3.selectAll('.odd').attr('opacity', showOdd ? 1 : 0);
+}
+
 function renderChart(data) {
   const {
     trips,
@@ -277,8 +284,15 @@ function renderChart(data) {
   };
 
   const header = d3.select('#header');
-  header.append('div')
+  header.append('p')
     .text(`All times ${moment().tz(chartTimezone).zoneAbbr()} unless otherwise specified. Hover over stop for local time.`);
+
+  header.append('div')
+    .html('<input type="checkbox" checked id="check_even"> <label for="check_even">Show even trains</label>');
+  header.append('div')
+    .html('<input type="checkbox" checked id="check_odd"> <label for="check_odd">Show odd trains</label>');
+
+  document.querySelectorAll('input').forEach(input => input.addEventListener('click', updateDisplay));
 
   const chart = d3.select('#chart')
     .attr('style', `width: ${width}px; max-width: ${width}px;`);
