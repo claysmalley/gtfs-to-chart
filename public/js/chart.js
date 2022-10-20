@@ -112,8 +112,8 @@ function renderChart(data) {
   })));
 
   const height = 2000;
-  const width = 120 + 15 * stations.length;
-  const topMargin = 20 + (_.max(_.map(stations, station => `${station.stop_id} | ${station.stop_short_name}`.length)) * 6.0);
+  const width = Math.max(360, 120 + 15 * stations.length);
+  const topMargin = 20 + (_.max(_.map(stations, station => `${station.stop_id} | ${station.stop_short_name}`.length)) * 7.0);
   const margin = ({ top: topMargin, right: 70, bottom: topMargin, left: 80 });
 
   const primaryDirectionId = getPrimaryDirectionId(stations);
@@ -155,7 +155,7 @@ function renderChart(data) {
       .style('font', 'bold 14px "Roboto", sans-serif')
       .attr('opacity', 0.2)
       .attr('fill', 'currentColor')
-      .attr('transform', 'translate(-2,0)')
+      .attr('transform', 'translate(12,0)')
       .append('textPath')
       .attr('xlink:href', d => `#${d.stop_id}`)
       .style('text-anchor', 'middle')
