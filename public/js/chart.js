@@ -145,7 +145,7 @@ function renderChart(data) {
       .attr('y2', height - margin.bottom)
       .attr('stroke', 'currentColor'))
     .call(g => g.append('line')
-      .attr('id', d => d.stop_id)
+      .attr('id', d => `path_${d.stop_id}`)
       .attr('y2', margin.top)
       .attr('y1', height - margin.bottom)
       .attr('stroke-opacity', 0.2)
@@ -157,7 +157,7 @@ function renderChart(data) {
       .attr('fill', 'currentColor')
       .attr('transform', 'translate(12,0)')
       .append('textPath')
-      .attr('xlink:href', d => `#${d.stop_id}`)
+      .attr('xlink:href', d => `#path_${d.stop_id}`)
       .style('text-anchor', 'middle')
       .text(d => d.stop_id)
       .attr('startOffset', '30%')
@@ -276,11 +276,14 @@ function renderChart(data) {
       });
   };
 
-  const svg = d3.select('#chart')
-    .append('div')
-    .attr('style', `width: ${width}px; max-width: ${width}px;`)
-    .text(`All times ${moment().tz(chartTimezone).zoneAbbr()} unless otherwise specified. Hover over stop for local time.`)
-    .append('svg')
+  const header = d3.select('#header');
+  header.append('div')
+    .text(`All times ${moment().tz(chartTimezone).zoneAbbr()} unless otherwise specified. Hover over stop for local time.`);
+
+  const chart = d3.select('#chart')
+    .attr('style', `width: ${width}px; max-width: ${width}px;`);
+
+  const svg = chart.append('svg')
     .attr('viewBox', [0, 0, width, height]);
 
   svg.append('g')
@@ -324,7 +327,8 @@ function renderChart(data) {
     .join('g');
 
   vehiclePath.append('path')
-    .attr('id', d => d.id)
+    .attr('id', d => `path_${d.id}`)
+    .attr('class', d => d.number % 2 == 0 ? 'even' : 'odd')
     .attr('stroke', d => 'url(#line-gradient)')
     .attr('d', d => line(d.stops));
 
@@ -337,8 +341,9 @@ function renderChart(data) {
     .join('g');
 
   vehicleText.append('text')
+    .attr('class', d => d.number % 2 == 0 ? 'even' : 'odd')
     .append('textPath')
-    .attr('xlink:href', d => `#${d.id}`)
+    .attr('xlink:href', d => `#path_${d.id}`)
     .style('text-anchor', 'middle')
     .text(d => d.number)
     .attr('startOffset', d => d.number % 2 == 0 ? '20%' : '30%')
@@ -358,6 +363,7 @@ function renderChart(data) {
     .join('g');
 
   vehicleStops.append('g')
+    .attr('class', d => d.number % 2 == 0 ? 'even' : 'odd')
     .selectAll('path')
     .data(d => d.stops)
     .join('path')
