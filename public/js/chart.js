@@ -108,7 +108,7 @@ function renderChart(data) {
     number: trip.trip_short_name,
     direction: trip.direction_id,
     trip_headsign: shortenStationName(trip.trip_headsign),
-    stops: geStopsFromStoptimes(trip.stoptimes, stations, startOfFirstTrip, 3),
+    stops: geStopsFromStoptimes(trip.stoptimes, stations, startOfFirstTrip, 7),
     route_id: trip.route_id,
     route_long_name: trip.route_long_name,
   }));
@@ -118,7 +118,7 @@ function renderChart(data) {
     stop
   })));
 
-  const height = 2000;
+  const height = 5000;
   const width = Math.max(360, 120 + 15 * stations.length);
   const topMargin = 20 + (_.max(_.map(stations, station => `${station.stop_id} | ${station.stop_short_name}`.length)) * 7.0);
   const margin = ({ top: topMargin, right: 70, bottom: topMargin, left: 80 });
@@ -167,9 +167,17 @@ function renderChart(data) {
       .attr('xlink:href', d => `#path_${d.stop_id}`)
       .style('text-anchor', 'middle')
       .text(d => d.stop_id)
-      .attr('startOffset', '30%')
+      .attr('startOffset', '14%')
       .clone(true)
-      .attr('startOffset', '63%'))
+      .attr('startOffset', '28%')
+      .clone(true)
+      .attr('startOffset', '43%')
+      .clone(true)
+      .attr('startOffset', '56%')
+      .clone(true)
+      .attr('startOffset', '70%')
+      .clone(true)
+      .attr('startOffset', '84%'))
     .call(g => g.append('text')
       .attr('transform', `translate(-5,${margin.top}) rotate(-70)`)
       .attr('fill', 'currentColor')
@@ -316,17 +324,25 @@ function renderChart(data) {
       .attr('x1', 0)
       .attr('y1', y(startOfFirstDay))
       .attr('x2', 0)
-      .attr('y2', y(startOfFirstDay.add(4, 'days')))
+      .attr('y2', y(startOfFirstDay.add(8, 'days')))
       .selectAll('stop')
         .data([
           {offset: '0%', color: nightColor},
-          {offset: '12.5%', color: dayColor},
+          {offset: '6.25%', color: dayColor},
+          {offset: '12.5%', color: nightColor},
+          {offset: '18.75%', color: dayColor},
           {offset: '25%', color: nightColor},
-          {offset: '37.5%', color: dayColor},
+          {offset: '31.25%', color: dayColor},
+          {offset: '37.5%', color: nightColor},
+          {offset: '43.75%', color: dayColor},
           {offset: '50%', color: nightColor},
-          {offset: '62.5%', color: dayColor},
+          {offset: '56.25%', color: dayColor},
+          {offset: '62.5%', color: nightColor},
+          {offset: '68.75%', color: dayColor},
           {offset: '75%', color: nightColor},
-          {offset: '87.5%', color: dayColor},
+          {offset: '81.25%', color: dayColor},
+          {offset: '87.5%', color: nightColor},
+          {offset: '93.75%', color: dayColor},
           {offset: '100%', color: nightColor}
         ])
       .enter().append('stop')
