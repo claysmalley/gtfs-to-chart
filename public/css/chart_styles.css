@@ -34,3 +34,7 @@ h3 {
     font-size: 15px;
   }
 }
+
+.list-group-item {
+  background: #393939;
+}
