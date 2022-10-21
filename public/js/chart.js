@@ -349,6 +349,9 @@ function renderChart(data) {
         .attr('offset', d => d.offset)
         .attr('stop-color', d => d.color);
 
+  const trainIsEven = d => (d.number % 2 == 0) != (d.route_id == 78);
+  const trainIsOdd = d => (d.number % 2 != 0) != (d.route_id == 78);
+
   const vehiclePath = svg.append('g')
     .attr('stroke-width', 2.5)
     .attr('fill', 'none')
@@ -358,7 +361,8 @@ function renderChart(data) {
 
   vehiclePath.append('path')
     .attr('id', d => `path_${d.id}`)
-    .attr('class', d => d.number % 2 == 0 ? 'even' : 'odd')
+    .classed('even', trainIsEven)
+    .classed('odd', trainIsOdd)
     .attr('stroke', d => 'url(#line-gradient)')
     .attr('d', d => line(d.stops));
 
@@ -371,7 +375,8 @@ function renderChart(data) {
     .join('g');
 
   vehicleText.append('text')
-    .attr('class', d => d.number % 2 == 0 ? 'even' : 'odd')
+    .classed('even', trainIsEven)
+    .classed('odd', trainIsOdd)
     .append('textPath')
     .attr('xlink:href', d => `#path_${d.id}`)
     .style('text-anchor', 'middle')
@@ -393,7 +398,8 @@ function renderChart(data) {
     .join('g');
 
   vehicleStops.append('g')
-    .attr('class', d => d.number % 2 == 0 ? 'even' : 'odd')
+    .classed('even', trainIsEven)
+    .classed('odd', trainIsOdd)
     .selectAll('path')
     .data(d => d.stops)
     .join('path')
