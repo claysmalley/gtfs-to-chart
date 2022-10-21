@@ -296,9 +296,7 @@ function renderChart(data) {
     .text(`All times ${moment().tz(chartTimezone).zoneAbbr()} unless otherwise specified. Hover over stop for local time.`);
 
   header.append('div')
-    .html('<input type="checkbox" checked id="check_even"> <label for="check_even">Show even trains</label>');
-  header.append('div')
-    .html('<input type="checkbox" checked id="check_odd"> <label for="check_odd">Show odd trains</label>');
+    .html('<input type="checkbox" checked id="check_even"> <label for="check_even">Show even trains</label> <input type="checkbox" checked id="check_odd"> <label for="check_odd">Show odd trains</label>');
 
   document.querySelectorAll('input').forEach(input => input.addEventListener('click', updateDisplay));
 
