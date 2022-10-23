@@ -293,6 +293,10 @@ function renderChart(data) {
           .attr('stroke-width', 2.5);
         d3.selectAll('.path_bkgd')
           .attr('stroke-width', 6);
+        d3.select(`#stops_${d.trip.id}`)
+          .raise();
+        d3.select(`#dwells_${d.trip.id}`)
+          .raise();
         d3.select(`#g_${d.trip.id}`)
           .raise();
         d3.select(`#g_${d.trip.id} .path`)
@@ -445,10 +449,10 @@ function renderChart(data) {
   };
 
   const vehicleDwells = svg.append('g')
-    .attr('stroke-linecap', 'round')
     .selectAll('g')
     .data(formattedTrips)
     .join('g')
+    .attr('id', d => `dwells_${d.id}`)
     .classed('even', trainIsEven)
     .classed('odd', trainIsOdd);
 
@@ -457,6 +461,7 @@ function renderChart(data) {
     .data(d => dwells(d.stops))
     .join('path')
     .attr('d', d => ` M ${x(d[0].station.distance)} ${y(d[0].time)} L ${x(d[1].station.distance)} ${y(d[1].time)}`)
+    .attr('stroke-linecap', 'round')
     .attr('stroke-width', 8)
     .attr('stroke', '#222222')
     .clone(true)
@@ -464,12 +469,13 @@ function renderChart(data) {
     .attr('stroke', 'white');
 
   const vehicleStops = svg.append('g')
-    .attr('stroke-width', 2)
-    .attr('stroke', '#222222')
-    .attr('fill', d => 'white')
     .selectAll('g')
     .data(formattedTrips)
     .join('g')
+    .attr('stroke-width', 2)
+    .attr('stroke', '#222222')
+    .attr('fill', d => 'white')
+    .attr('id', d => `stops_${d.id}`)
     .classed('even', trainIsEven)
     .classed('odd', trainIsOdd);
 
