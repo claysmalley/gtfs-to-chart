@@ -394,6 +394,7 @@ function renderChart(data) {
     .classed('path_bkgd', true)
     .attr('stroke', '#222222')
     .attr('stroke-width', 6)
+    .attr('stroke-linejoin', 'round')
     .attr('d', d => line(reverseIfUpsideDown(d.stops)));
 
   vehiclePath.append('path')
@@ -401,6 +402,7 @@ function renderChart(data) {
     .attr('id', d => `path_${d.id}`)
     .attr('stroke', d => 'url(#line-gradient)')
     .attr('stroke-width', 2.5)
+    .attr('stroke-linejoin', 'round')
     .attr('d', d => line(reverseIfUpsideDown(d.stops)));
 
   const vehicleText = svg.append('g')
