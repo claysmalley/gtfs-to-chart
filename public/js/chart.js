@@ -281,8 +281,13 @@ function renderChart(data) {
       .data(stops)
       .join('path')
       .attr('d', (d, i) => voronoi.renderCell(i))
-      .on('mouseout', () => tooltip.style('display', 'none'))
+      .on('mouseout', () => {
+        tooltip.style('display', 'none');
+        d3.selectAll('.path_bkgd').attr('stroke', '#222222');
+      })
       .on('mouseover', d => {
+        d3.selectAll('.path_bkgd').attr('stroke', '#222222');
+        d3.select(`#path_bkgd_${d.trip.id}`).attr('stroke', 'url(#line-gradient)');
         tooltip.style('display', null);
         line1.text(`${d.trip.route_long_name} ${d.trip.number}`);
         line2.text(`to ${d.trip.trip_headsign}`);
@@ -365,17 +370,26 @@ function renderChart(data) {
   const trainIsOdd = d => (d.number % 2 != 0) != (d.route_id == 78);
 
   const vehiclePath = svg.append('g')
-    .attr('stroke-width', 2.5)
     .attr('fill', 'none')
     .selectAll('g')
     .data(formattedTrips)
     .join('g');
 
   vehiclePath.append('path')
+    .attr('id', d => `path_bkgd_${d.id}`)
+    .classed('path_bkgd', true)
+    .classed('even', trainIsEven)
+    .classed('odd', trainIsOdd)
+    .attr('stroke', '#222222')
+    .attr('stroke-width', 6)
+    .attr('d', d => line(d.stops));
+
+  vehiclePath.append('path')
     .attr('id', d => `path_${d.id}`)
     .classed('even', trainIsEven)
     .classed('odd', trainIsOdd)
     .attr('stroke', d => 'url(#line-gradient)')
+    .attr('stroke-width', 2.5)
     .attr('d', d => line(d.stops));
 
   const vehicleText = svg.append('g')
