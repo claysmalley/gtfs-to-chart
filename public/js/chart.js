@@ -283,15 +283,22 @@ function renderChart(data) {
       .attr('d', (d, i) => voronoi.renderCell(i))
       .on('mouseout', () => {
         tooltip.style('display', 'none');
-        d3.selectAll('.path').attr('stroke-width', 2.5);
-        d3.selectAll('.path_bkgd').attr('stroke-width', 6);
+        d3.selectAll('.path')
+          .attr('stroke-width', 2.5);
+        d3.selectAll('.path_bkgd')
+          .attr('stroke-width', 6);
       })
       .on('mouseover', d => {
-        d3.selectAll('.path').attr('stroke-width', 2.5);
-        d3.selectAll('.path_bkgd').attr('stroke-width', 6);
-        d3.select(`#path_${d.trip.id}`).raise();
-        d3.select(`#path_${d.trip.id} .path`).attr('stroke-width', 5);
-        d3.select(`#path_${d.trip.id} .path_bkgd`).attr('stroke-width', 9);
+        d3.selectAll('.path')
+          .attr('stroke-width', 2.5);
+        d3.selectAll('.path_bkgd')
+          .attr('stroke-width', 6);
+        d3.select(`#path_${d.trip.id}`)
+          .raise();
+        d3.select(`#path_${d.trip.id} .path`)
+          .attr('stroke-width', 5);
+        d3.select(`#path_${d.trip.id} .path_bkgd`)
+          .attr('stroke-width', 9);
         tooltip.style('display', null);
         line1.text(`${d.trip.route_long_name} ${d.trip.number}`);
         line2.text(`to ${d.trip.trip_headsign}`);
@@ -378,7 +385,7 @@ function renderChart(data) {
     .selectAll('g')
     .data(formattedTrips)
     .join('g')
-    .attr('id', d => `path_${d.id}`)
+    .attr('id', d => `g_${d.id}`)
     .classed('even', trainIsEven)
     .classed('odd', trainIsOdd);
 
@@ -390,6 +397,7 @@ function renderChart(data) {
 
   vehiclePath.append('path')
     .classed('path', true)
+    .attr('id', d => `path_${d.id}`)
     .attr('stroke', d => 'url(#line-gradient)')
     .attr('stroke-width', 2.5)
     .attr('d', d => line(d.stops));
@@ -400,11 +408,11 @@ function renderChart(data) {
     .attr('transform', 'translate(0,-4)')
     .selectAll('g')
     .data(formattedTrips)
-    .join('g');
+    .join('g')
+    .classed('even', trainIsEven)
+    .classed('odd', trainIsOdd);
 
   vehicleText.append('text')
-    .classed('even', trainIsEven)
-    .classed('odd', trainIsOdd)
     .append('textPath')
     .attr('xlink:href', d => `#path_${d.id}`)
     .style('text-anchor', 'middle')
@@ -423,11 +431,11 @@ function renderChart(data) {
     .attr('fill', d => 'white')
     .selectAll('g')
     .data(formattedTrips)
-    .join('g');
+    .join('g')
+    .classed('even', trainIsEven)
+    .classed('odd', trainIsOdd);
 
   vehicleStops.append('g')
-    .classed('even', trainIsEven)
-    .classed('odd', trainIsOdd)
     .selectAll('path')
     .data(d => d.stops)
     .join('path')
