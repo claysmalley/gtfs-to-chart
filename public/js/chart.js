@@ -289,8 +289,9 @@ function renderChart(data) {
       .on('mouseover', d => {
         d3.selectAll('.path').attr('stroke-width', 2.5);
         d3.selectAll('.path_bkgd').attr('stroke-width', 6);
-        d3.select(`#path_${d.trip.id}`).attr('stroke-width', 5);
-        d3.select(`#path_bkgd_${d.trip.id}`).attr('stroke-width', 9);
+        d3.select(`#path_${d.trip.id}`).raise();
+        d3.select(`#path_${d.trip.id} .path`).attr('stroke-width', 5);
+        d3.select(`#path_${d.trip.id} .path_bkgd`).attr('stroke-width', 9);
         tooltip.style('display', null);
         line1.text(`${d.trip.route_long_name} ${d.trip.number}`);
         line2.text(`to ${d.trip.trip_headsign}`);
@@ -376,22 +377,19 @@ function renderChart(data) {
     .attr('fill', 'none')
     .selectAll('g')
     .data(formattedTrips)
-    .join('g');
+    .join('g')
+    .attr('id', d => `path_${d.id}`)
+    .classed('even', trainIsEven)
+    .classed('odd', trainIsOdd);
 
   vehiclePath.append('path')
-    .attr('id', d => `path_bkgd_${d.id}`)
     .classed('path_bkgd', true)
-    .classed('even', trainIsEven)
-    .classed('odd', trainIsOdd)
     .attr('stroke', '#222222')
     .attr('stroke-width', 6)
     .attr('d', d => line(d.stops));
 
   vehiclePath.append('path')
-    .attr('id', d => `path_${d.id}`)
     .classed('path', true)
-    .classed('even', trainIsEven)
-    .classed('odd', trainIsOdd)
     .attr('stroke', d => 'url(#line-gradient)')
     .attr('stroke-width', 2.5)
     .attr('d', d => line(d.stops));
