@@ -40,7 +40,7 @@ function geStopsFromStoptimes(stoptimes, stations, startOfFirstTrip, days) {
 
     return memo;
   }, []);
-  return stops.length === 0 ? [] : stops[0].station.distance < stops[stops.length - 1].station.distance ? stops : stops.reverse();
+  return stops.length === 0 ? [] : stops;
 }
 
 function shortenStationName(name) {
@@ -379,6 +379,7 @@ function renderChart(data) {
 
   const trainIsEven = d => (d.number % 2 == 0) != (d.route_id == 78);
   const trainIsOdd = d => (d.number % 2 != 0) != (d.route_id == 78);
+  const reverseIfUpsideDown = d => d.length === 0 ? [] : d[0].station.distance < d[d.length - 1].station.distance ? d : [...d].reverse();
 
   const vehiclePath = svg.append('g')
     .attr('fill', 'none')
@@ -393,14 +394,14 @@ function renderChart(data) {
     .classed('path_bkgd', true)
     .attr('stroke', '#222222')
     .attr('stroke-width', 6)
-    .attr('d', d => line(d.stops));
+    .attr('d', d => line(reverseIfUpsideDown(d.stops)));
 
   vehiclePath.append('path')
     .classed('path', true)
     .attr('id', d => `path_${d.id}`)
     .attr('stroke', d => 'url(#line-gradient)')
     .attr('stroke-width', 2.5)
-    .attr('d', d => line(d.stops));
+    .attr('d', d => line(reverseIfUpsideDown(d.stops)));
 
   const vehicleText = svg.append('g')
     .style('font', 'bold 14px "Roboto", sans-serif')
@@ -425,8 +426,43 @@ function renderChart(data) {
     .attr('stroke-width', '3')
     .attr('stroke', '#222222');
 
+  const dwells = stops => {
+    var result = [];
+    for (const i in stops) {
+      if (stops[i].type === 'arrival') {
+        result.push([stops[i]]);
+      }
+      if (stops[i].type === 'departure' && result[result.length - 1] != null) {
+        result[result.length - 1].push(stops[i]);
+      }
+    }
+    if (result[result.length - 1] && result[result.length - 1].length === 1) {
+      result.pop();
+    }
+    return result;
+  };
+
+  const vehicleDwells = svg.append('g')
+    .attr('stroke-linecap', 'round')
+    .selectAll('g')
+    .data(formattedTrips)
+    .join('g')
+    .classed('even', trainIsEven)
+    .classed('odd', trainIsOdd);
+
+  vehicleDwells.append('g')
+    .selectAll('path')
+    .data(d => dwells(d.stops))
+    .join('path')
+    .attr('d', d => ` M ${x(d[0].station.distance)} ${y(d[0].time)} L ${x(d[1].station.distance)} ${y(d[1].time)}`)
+    .attr('stroke-width', 8)
+    .attr('stroke', '#222222')
+    .clone(true)
+    .attr('stroke-width', 4)
+    .attr('stroke', 'white');
+
   const vehicleStops = svg.append('g')
-    .attr('stroke-width', 1.5)
+    .attr('stroke-width', 2)
     .attr('stroke', '#222222')
     .attr('fill', d => 'white')
     .selectAll('g')
@@ -437,20 +473,10 @@ function renderChart(data) {
 
   vehicleStops.append('g')
     .selectAll('path')
-    .data(d => d.stops)
+    .data(d => d.stops.filter(d => d.type === 'stop'))
     .join('path')
-    .attr('stroke-width', 2)
     .attr('transform', d => `translate(${x(d.station.distance)},${y(d.time)})`)
-    .attr('d', d => {
-      switch (d.type) {
-        case 'arrival':
-        return ' M -3 1 L -3 0 A 3 3 0 0 1 3 0 L 3 1 z';
-        case 'departure':
-        return ' M 3 -1 L 3 0 A 3 3 0 0 1 -3 0 L -3 -1 z';
-        default:
-        return ' M 3 0 A 3 3 0 1 1 -3 0 A 3 3 0 1 1 3 0 z';
-      }
-    });
+    .attr('d', d => ' M 3 0 A 3 3 0 1 1 -3 0 A 3 3 0 1 1 3 0 z');
 
   svg.append('g')
     .call(tooltip);
