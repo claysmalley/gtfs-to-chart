@@ -293,11 +293,11 @@ function renderChart(data) {
           .attr('stroke-width', 2.5);
         d3.selectAll('.path_bkgd')
           .attr('stroke-width', 6);
-        d3.select(`#path_${d.trip.id}`)
+        d3.select(`#g_${d.trip.id}`)
           .raise();
-        d3.select(`#path_${d.trip.id} .path`)
+        d3.select(`#g_${d.trip.id} .path`)
           .attr('stroke-width', 5);
-        d3.select(`#path_${d.trip.id} .path_bkgd`)
+        d3.select(`#g_${d.trip.id} .path_bkgd`)
           .attr('stroke-width', 9);
         tooltip.style('display', null);
         line1.text(`${d.trip.route_long_name} ${d.trip.number}`);
