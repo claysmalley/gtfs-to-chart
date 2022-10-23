@@ -155,19 +155,31 @@ function renderChart(data) {
       .attr('id', d => `path_${d.stop_id}`)
       .attr('y2', margin.top)
       .attr('y1', height - margin.bottom)
-      .attr('stroke-opacity', 0.2)
-      .attr('stroke-dasharray', d => d.major ? '' : '1.5,2')
-      .attr('stroke-width', d => d.major ? 1.5 : 1)
+      .attr('stroke-dasharray', d => d.major ? '' : '1,3')
       .attr('stroke', 'currentColor'))
     .call(g => g.append('text')
       .style('font', 'bold 14px "Roboto", sans-serif')
-      .attr('opacity', 0.2)
       .attr('fill', 'currentColor')
+      .attr('stroke', '#222222')
+      .attr('stroke-width', 3)
       .attr('transform', 'translate(12,0)')
       .append('textPath')
       .attr('xlink:href', d => `#path_${d.stop_id}`)
       .style('text-anchor', 'middle')
       .text(d => d.stop_id)
+      .attr('startOffset', '14%')
+      .clone(true)
+      .attr('startOffset', '28%')
+      .clone(true)
+      .attr('startOffset', '43%')
+      .clone(true)
+      .attr('startOffset', '56%')
+      .clone(true)
+      .attr('startOffset', '70%')
+      .clone(true)
+      .attr('startOffset', '84%')
+      .clone(true)
+      .attr('stroke-width', 0)
       .attr('startOffset', '14%')
       .clone(true)
       .attr('startOffset', '28%')
@@ -212,6 +224,8 @@ function renderChart(data) {
       })
     );
 
+  const isMajorHour = d => moment(d).tz(chartTimezone).format('H') % 6 == 0;
+
   const yAxis = g => g
     .style('font', '14px Roboto, sans-serif')
     .attr('transform', `translate(${margin.left},0)`)
@@ -223,12 +237,11 @@ function renderChart(data) {
       }))
     .call(g => g.select('.domain').remove())
     .call(g => g.selectAll('.tick line')
-      .attr('stroke-width', d => moment(d).tz(chartTimezone).format('H') % 6 == 0 ? 2.5 : 1)
+      .attr('stroke-width', d => isMajorHour(d) ? 1 : 0.5)
       .clone().lower()
-      .attr('stroke-opacity', 0.2)
       .attr('x2', width))
     .call(g => g.selectAll('.tick text')
-      .attr('font-weight', d => moment(d).tz(chartTimezone).format('H') % 6 == 0 ? 'bold' : 'regular'));
+      .attr('font-weight', d => isMajorHour(d) ? 'bold' : 'regular'));
 
   const voronoi = d3.Delaunay
     .from(stops, d => x(d.stop.station.distance), d => y(d.stop.time))
@@ -293,8 +306,8 @@ function renderChart(data) {
   };
 
   const header = d3.select('#header');
-  header.append('p')
-    .text(`All times ${moment().tz(chartTimezone).zoneAbbr()} unless otherwise specified. Hover over stop for local time.`);
+  header.append('div')
+    .text(`Times listed in ${moment().tz(chartTimezone).zoneAbbr()}. Hover over stop for local time.`);
 
   header.append('div')
     .html('<input type="checkbox" checked id="check_even"> <label for="check_even">Show even trains</label> <input type="checkbox" checked id="check_odd"> <label for="check_odd">Show odd trains</label>');
@@ -308,10 +321,10 @@ function renderChart(data) {
     .attr('viewBox', [0, 0, width, height]);
 
   svg.append('g')
-    .call(xAxis);
+    .call(yAxis);
 
   svg.append('g')
-    .call(yAxis);
+    .call(xAxis);
 
   const startOfFirstDay = moment(d3.extent(stops, s => s.stop.time)[0]).tz(chartTimezone).startOf('day');
 
@@ -386,11 +399,11 @@ function renderChart(data) {
 
   vehicleText.clone(true).lower()
     .attr('stroke-width', '3')
-    .attr('stroke', '#333333');
+    .attr('stroke', '#222222');
 
   const vehicleStops = svg.append('g')
     .attr('stroke-width', 1.5)
-    .attr('stroke', '#333333')
+    .attr('stroke', '#222222')
     .attr('fill', d => 'white')
     .selectAll('g')
     .data(formattedTrips)
@@ -402,15 +415,16 @@ function renderChart(data) {
     .selectAll('path')
     .data(d => d.stops)
     .join('path')
+    .attr('stroke-width', 2)
     .attr('transform', d => `translate(${x(d.station.distance)},${y(d.time)})`)
     .attr('d', d => {
       switch (d.type) {
         case 'arrival':
-        return ' M -2.5 1 L -2.5 0 A 2.5 2.5 0 0 1 2.5 0 L 2.5 1 z';
+        return ' M -3 1 L -3 0 A 3 3 0 0 1 3 0 L 3 1 z';
         case 'departure':
-        return ' M 2.5 -1 L 2.5 0 A 2.5 2.5 0 0 1 -2.5 0 L -2.5 -1 z';
+        return ' M 3 -1 L 3 0 A 3 3 0 0 1 -3 0 L -3 -1 z';
         default:
-        return ' M 2.5 0 A 2.5 2.5 0 1 1 -2.5 0 A 2.5 2.5 0 1 1 2.5 0 z';
+        return ' M 3 0 A 3 3 0 1 1 -3 0 A 3 3 0 1 1 3 0 z';
       }
     });
 

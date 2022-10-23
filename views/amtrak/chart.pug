@@ -5,10 +5,11 @@ include formatting_functions.pug
   .container
     .row.mt-4.mb-4
       .col-md-12#header
-        a(href="/gtfs-to-chart/charts/amtrak/") ‹ Back
-        h1.timetable-page-label
+        h2.timetable-page-label
+          a(href="/gtfs-to-chart/charts/amtrak/") ‹ 
           span= routeName
-        h3= moment(config.chartDate, 'YYYYMMDD').format('MMMM D, YYYY')
+        div
+          span= moment(config.chartDate, 'YYYYMMDD').format('MMMM D, YYYY')
 
     .chart(id="chart")
 

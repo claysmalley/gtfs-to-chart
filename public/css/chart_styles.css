@@ -5,7 +5,7 @@ body {
   font-size: 14px;
   line-height: 1.4;
   color: #dddddd;
-  background-color: #333333;
+  background-color: #222222;
 }
 
 h1 {
@@ -36,9 +36,9 @@ h3 {
 }
 
 .list-group-item {
-  background: #393939;
+  background: #333333;
 }
 
 a {
-  color: #009bff;
+  color: #33bbff;
 }
