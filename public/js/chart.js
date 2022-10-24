@@ -47,6 +47,10 @@ function shortenStationName(name) {
   return name.replace(/ Passenger Terminal$/i, "").replace(/ Station$/i, "").replace(/ Auto Train$/i, "").replace(/ Union$/i, "").replace(/ Amtrak$/i, "").replace(/ Moynihan Train Hall at/i, "").replace(/ Transportation Center$/i, "").replace(/ Regional$/i, "");
 }
 
+function formatTimezoneName(timezone) {
+  return moment().tz(timezone).zoneAbbr();
+}
+
 function formatStopTime(stop) {
   let formattedTime = moment(stop.time).tz(stop.station.timezone).format('h:mma z');
 
@@ -100,6 +104,8 @@ function renderChart(data) {
 
   const chartTimezone = getChartTimezone(stations);
 
+  const formatStationName = station => `${station.stop_short_name}, ${station.state}`;
+
   const startOfFirstTrip = _.min(trips.flatMap(trip => trip.stoptimes.map(stoptime => moment(stoptime.arrival_time_utc)))).tz(chartTimezone).startOf('day');
 
   const formattedTrips = trips.map(trip => ({
@@ -119,7 +125,7 @@ function renderChart(data) {
 
   const height = 5000;
   const width = Math.max(360, 120 + 15 * stations.length);
-  const topMargin = 20 + (_.max(_.map(stations, station => `${station.stop_id} | ${station.stop_short_name}`.length)) * 7.0);
+  const topMargin = 20 + (_.max(_.map(stations, station => `${station.stop_id} | ${formatStationName(station)}`.length)) * 6.0);
   const margin = ({ top: topMargin, right: 70, bottom: topMargin, left: 80 });
 
   const primaryDirectionId = getPrimaryDirectionId(stations);
@@ -200,9 +206,7 @@ function renderChart(data) {
           .style('font', 'bold 14px Roboto, sans-serif')
           .text(d => `${d.stop_id}`);
         text.append('tspan')
-          .text(d => ` | ${d.stop_short_name}, `);
-        text.append('tspan')
-          .text(d => `${d.state}`);
+          .text(d => ` | ${formatStationName(d)}`);
       })
     )
     .style('display', d => d.stop_id !== 'LKL' && d.direction_id === primaryDirectionId ? 'block' : 'none')
@@ -214,9 +218,7 @@ function renderChart(data) {
       .attr('dy', '0.35em')
       .call(text => {
         text.append('tspan')
-          .text(d => `${d.stop_short_name}, `);
-        text.append('tspan')
-          .text(d => `${d.state} | `);
+          .text(d => `${formatStationName(d)} | `);
         text.append('tspan')
           .style('font', 'bold 14px Roboto, sans-serif')
           .text(d => `${d.stop_id}`);
@@ -303,7 +305,7 @@ function renderChart(data) {
         d3.select(`#g_${d.trip.id} .path_bkgd`)
           .attr('stroke-width', 9);
         tooltip.style('display', null);
-        line1.text(`${d.stop.station.stop_id} | ${d.stop.station.stop_short_name}, ${d.stop.station.state}`);
+        line1.text(`${d.stop.station.stop_id} | ${formatStationName(d.stop.station)}`);
         line2.text(formatStopTime(d.stop));
         line3.text(`${d.trip.route_long_name} ${d.trip.number}`);
         line4.text(`to ${d.trip.trip_headsign}`);
@@ -326,7 +328,7 @@ function renderChart(data) {
 
   const header = d3.select('#header');
   header.append('div')
-    .text(`Times listed in ${moment().tz(chartTimezone).zoneAbbr()}. Hover over stop for local time.`);
+    .text(`Times listed in ${formatTimezoneName(chartTimezone)}. Hover over stop for local time.`);
 
   header.append('div')
     .html('<input type="checkbox" checked id="check_even"> <label for="check_even">Show even trains</label> <input type="checkbox" checked id="check_odd"> <label for="check_odd">Show odd trains</label>');
