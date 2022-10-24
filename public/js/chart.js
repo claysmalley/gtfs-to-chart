@@ -48,15 +48,14 @@ function shortenStationName(name) {
 }
 
 function formatStopTime(stop) {
-  let formattedTime = '';
+  let formattedTime = moment(stop.time).tz(stop.station.timezone).format('h:mma z');
 
   if (stop.type === 'arrival') {
-    formattedTime += 'Arrives ';
+    formattedTime += ' (arrival)';
   } else if (stop.type === 'departure') {
-    formattedTime += 'Departs ';
+    formattedTime += ' (departure)';
   }
 
-  formattedTime += moment(stop.time).tz(stop.station.timezone).format('h:mma z');
   return formattedTime;
 }
 
@@ -304,10 +303,10 @@ function renderChart(data) {
         d3.select(`#g_${d.trip.id} .path_bkgd`)
           .attr('stroke-width', 9);
         tooltip.style('display', null);
-        line1.text(`${d.trip.route_long_name} ${d.trip.number}`);
-        line2.text(`to ${d.trip.trip_headsign}`);
-        line3.text(`${d.stop.station.stop_id} | ${d.stop.station.stop_short_name}, ${d.stop.station.state}`);
-        line4.text(formatStopTime(d.stop));
+        line1.text(`${d.stop.station.stop_id} | ${d.stop.station.stop_short_name}, ${d.stop.station.state}`);
+        line2.text(formatStopTime(d.stop));
+        line3.text(`${d.trip.route_long_name} ${d.trip.number}`);
+        line4.text(`to ${d.trip.trip_headsign}`);
         path.attr('stroke', 'rgb(34, 34, 34)');
         const box = text.node().getBBox();
         path.attr('d', `
