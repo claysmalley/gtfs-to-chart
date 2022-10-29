@@ -109,15 +109,16 @@ function renderChart(data) {
   const startOfFirstTrip = _.min(trips.flatMap(trip => trip.stoptimes.map(stoptime => moment(stoptime.arrival_time_utc)))).tz(chartTimezone).startOf('day');
   const labelPlacementTimes = [0, 1, 2, 3, 4, 5].map(i => moment(startOfFirstTrip).add(74.5, 'hours').add(i, 'days').toDate());
 
-  const formattedTrips = trips.map(trip => ({
-    id: `${trip.start_day}_${trip.trip_id}`,
-    number: trip.trip_short_name,
-    direction: trip.direction_id,
-    trip_headsign: shortenStationName(trip.trip_headsign),
-    stops: geStopsFromStoptimes(trip.stoptimes, stations, startOfFirstTrip, 7),
-    route_id: trip.route_id,
-    route_long_name: trip.route_long_name,
-  }));
+  const formattedTrips = _.uniqBy(trips, trip => JSON.stringify(trip.stoptimes))
+    .map(trip => ({
+      id: `${trip.start_day}_${trip.trip_id}`,
+      number: trip.trip_short_name,
+      direction: trip.direction_id,
+      trip_headsign: shortenStationName(trip.trip_headsign),
+      stops: geStopsFromStoptimes(trip.stoptimes, stations, startOfFirstTrip, 7),
+      route_id: trip.route_id,
+      route_long_name: trip.route_long_name,
+    }));
 
   const stops = formattedTrips.flatMap(trip => trip.stops.map(stop => ({
     trip,
