@@ -125,7 +125,7 @@ function renderChart(data) {
     stop
   })));
 
-  const height = 5000;
+  const height = formattedTrips.length > 75 ? formattedTrips.length > 150 ? 8000 : 6000 : 5000;
   const width = Math.max(360, 120 + 15 * stations.length);
   const topMargin = 20 + (_.max(_.map(stations, station => `${station.stop_id} | ${formatStationName(station)}`.length)) * 6.0);
   const margin = ({ top: topMargin, right: 70, bottom: topMargin, left: 80 });
