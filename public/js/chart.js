@@ -14,27 +14,31 @@ function geStopsFromStoptimes(stoptimes, stations, startOfFirstTrip, days) {
   const endCutoff = moment(startOfFirstTrip).add(2 + days, 'days').add(30, 'minutes');
   const stops = stoptimes.reduce((memo, stoptime) => {
     const station = stations.find(station => station.stop_id === stoptime.stop_id);
-    const arrival = moment(stoptime.arrival_time_utc);
-    const departure = moment(stoptime.departure_time_utc);
-    if (station && departure.isAfter(startCutoff) && arrival.isBefore(endCutoff)) {
-      if (stoptime.arrival_time_utc === stoptime.departure_time_utc) {
-        memo.push({
-          station,
-          time: new Date(stoptime.arrival_time_utc),
-          type: 'stop'
-        });
-      } else {
-        memo.push(
-          {
+    if (!station) {
+      console.warn(`Could not find station ${stoptime.stop_id}`);
+    } else {
+      const arrival = moment(stoptime.arrival_time_utc);
+      const departure = moment(stoptime.departure_time_utc);
+      if (departure.isAfter(startCutoff) && arrival.isBefore(endCutoff)) {
+        if (stoptime.arrival_time_utc === stoptime.departure_time_utc) {
+          memo.push({
             station,
             time: new Date(stoptime.arrival_time_utc),
-            type: 'arrival'
-          }, {
-            station,
-            time: new Date(stoptime.departure_time_utc),
-            type: 'departure'
-          }
-        );
+            type: 'stop'
+          });
+        } else {
+          memo.push(
+            {
+              station,
+              time: new Date(stoptime.arrival_time_utc),
+              type: 'arrival'
+            }, {
+              station,
+              time: new Date(stoptime.departure_time_utc),
+              type: 'departure'
+            }
+          );
+        }
       }
     }
 
