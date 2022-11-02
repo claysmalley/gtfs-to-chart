@@ -118,7 +118,8 @@ function renderChart(data) {
       stops: geStopsFromStoptimes(trip.stoptimes, stations, startOfFirstTrip, 7),
       route_id: trip.route_id,
       route_long_name: trip.route_long_name,
-    }));
+    }))
+    .filter(trip => _.uniq(trip.stops.map(stop => stop.station.stop_id)).length >= 2);
 
   const stops = formattedTrips.flatMap(trip => trip.stops.map(stop => ({
     trip,
