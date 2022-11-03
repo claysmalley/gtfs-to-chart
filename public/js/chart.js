@@ -44,7 +44,7 @@ function geStopsFromStoptimes(stoptimes, stations, startOfFirstTrip, days) {
 }
 
 function shortenStationName(name) {
-  return name.replace(/ Passenger Terminal$/i, "").replace(/ Station$/i, "").replace(/ Auto Train$/i, "").replace(/ Union$/i, "").replace(/ Amtrak$/i, "").replace(/ Moynihan Train Hall at/i, "").replace(/ Transportation Center$/i, "").replace(/ Regional$/i, "");
+  return name.replace(/ Bus Stop$/i, "").replace(/ Passenger Terminal$/i, "").replace(/ Station$/i, "").replace(/ Auto Train$/i, "").replace(/ Union$/i, "").replace(/ Amtrak$/i, "").replace(/ Moynihan Train Hall at/i, "").replace(/ Transportation Center$/i, "").replace(/ Regional$/i, "");
 }
 
 function formatTimezoneName(timezone) {
