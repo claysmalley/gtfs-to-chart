@@ -172,14 +172,10 @@ function renderChart(data) {
     .call(g => labelPlacementTimes.forEach(time => {
       g.append('text')
         .style('font', 'bold 14px "Roboto", sans-serif')
+        .attr('paint-order', 'stroke')
+        .attr('fill', 'currentColor')
         .attr('stroke', '#222222')
         .attr('stroke-width', 3)
-        .attr('text-anchor', 'middle')
-        .attr('transform', `translate(5,${y(time)}) rotate(-90)`)
-        .text(d => d.stop_id);
-      g.append('text')
-        .style('font', 'bold 14px "Roboto", sans-serif')
-        .attr('fill', 'currentColor')
         .attr('text-anchor', 'middle')
         .attr('transform', `translate(5,${y(time)}) rotate(-90)`)
         .text(d => d.stop_id);
@@ -415,12 +411,11 @@ function renderChart(data) {
     .style('text-anchor', 'middle')
     .text(d => d.number)
     .attr('startOffset', d => d.number % 2 == 0 ? '20%' : '30%')
+    .attr('stroke-width', '3')
+    .attr('stroke', '#222222')
+    .attr('paint-order', 'stroke')
     .clone(true)
     .attr('startOffset', d => d.number % 2 == 0 ? '70%' : '80%');
-
-  vehicleText.clone(true).lower()
-    .attr('stroke-width', '3')
-    .attr('stroke', '#222222');
 
   const dwells = stops => {
     var result = [];
