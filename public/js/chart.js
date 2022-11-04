@@ -334,8 +334,8 @@ function renderChart(data) {
 
   const startOfFirstDay = moment(d3.extent(stops, s => s.stop.time)[0]).tz(chartTimezone).startOf('day');
 
-  const dayColor = 'palegoldenrod';
-  const nightColor = 'slateblue';
+  const dayColor = 'khaki';
+  const nightColor = 'mediumslateblue';
   svg.append('linearGradient')
       .attr('id', 'line-gradient')
       .attr('gradientUnits', 'userSpaceOnUse')
