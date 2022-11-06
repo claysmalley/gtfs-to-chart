@@ -22,10 +22,18 @@ block content
                   if route.route_color
                     .route-color-swatch-large(style=`background-color: #${route.route_color}`)
                   span= route.label
+                  span(style='display:none;')= ` ${route.keywords}`
 block footer
-  script(src="https://unpkg.com/lodash@4/lodash.min.js")
   script.
     function filterRoutes() {
-      let filterText = document.querySelector('#filter').value;
-      console.log(filterText);
+      let filterText = document.querySelector('#filter').value.toLowerCase();
+      let listItems = document.querySelectorAll('a.list-group-item');
+      listItems.forEach(listItem => {
+        if (filterText !== '' && !listItem.textContent.toLowerCase().includes(filterText)) {
+          listItem.setAttribute('hidden', 'true');
+        } else {
+          listItem.removeAttribute('hidden');
+        }
+      });
     }
+    filterRoutes();
