@@ -5,10 +5,13 @@ block content
   .container
     .row.mt-4.mb-2
       .col-md-12
-        h1.overview-label= `${agency} Routes`
+        h1.overview-label= `${agency} Schedules`
     .row.mt-4.mb-2
       .col-md-12
-        input#filter.form-control(type='text' placeholder='Search...' oninput='filterRoutes()')
+        .input-group.mb-3
+          .input-group-prepend
+            button.btn.btn-outline-secondary(type='button' onclick='clearFilter()') Clear
+          input#filter.form-control(type='text' placeholder='Search...' oninput='filterRoutes()')
     .row
       if !routes || !routes.length
         .col-md-6.col-md-offset-3
@@ -35,5 +38,9 @@ block footer
           listItem.removeAttribute('hidden');
         }
       });
+    }
+    function clearFilter() {
+      document.querySelector('#filter').value = '';
+      filterRoutes();
     }
     filterRoutes();
