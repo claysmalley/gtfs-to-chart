@@ -29,13 +29,13 @@ block content
 block footer
   script.
     function filterRoutes() {
-      let filterText = document.querySelector('#filter').value.toLowerCase();
+      let filterWords = document.querySelector('#filter').value.toLowerCase().split(" ");
       let listItems = document.querySelectorAll('a.list-group-item');
       listItems.forEach(listItem => {
-        if (filterText !== '' && !listItem.textContent.toLowerCase().includes(filterText)) {
-          listItem.setAttribute('hidden', 'true');
-        } else {
+        if (filterWords.length == 0 || filterWords.every(word => listItem.textContent.toLowerCase().includes(word))) {
           listItem.removeAttribute('hidden');
+        } else {
+          listItem.setAttribute('hidden', 'true');
         }
       });
     }
