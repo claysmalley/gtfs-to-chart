@@ -4,7 +4,6 @@ import { openDb, getRoutes } from 'gtfs';
 import express from 'express';
 
 import { setDefaultConfig, generateOverviewHTML, generateChartHTML } from '../lib/utils.js';
-import { routeList } from '../lib/data.js';
 
 const selectedConfig = JSON.parse(readFileSync(new URL('../config.json', import.meta.url)));
 const config = setDefaultConfig(selectedConfig);
