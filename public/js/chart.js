@@ -110,7 +110,7 @@ function renderChart(data) {
 
   const chartTimezone = getChartTimezone(stations);
 
-  const formatStationName = station => `${station.stop_short_name ?? station.name}, ${station.state}`;
+  const formatStationName = station => `${station.stop_short_name ?? station.name}, ${station.state ?? ''}`;
 
   const startOfFirstTrip = _.min(trips.flatMap(trip => trip.stoptimes.map(stoptime => moment(stoptime.arrival_time_utc)))).tz(chartTimezone).startOf('day');
   const labelPlacementTimes = [0, 1, 2, 3, 4, 5].map(i => moment(startOfFirstTrip).add(74.5, 'hours').add(i, 'days').toDate());
