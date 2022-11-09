@@ -6,7 +6,7 @@ include formatting_functions.pug
     .row.mt-4.mb-4
       .col-md-12#header
         h2.timetable-page-label
-          a(href="/gtfs-to-chart/charts/amtrak/") ‹ 
+          a(href="index.html" class=agencyKey) ‹ 
           span= routeName
         div
           span= moment(config.chartDate, 'YYYYMMDD').format('MMMM D, YYYY')
@@ -18,4 +18,4 @@ include formatting_functions.pug
         li= note
 
     .row-mt-4.mb-4
-      a(href="https://github.com/BlinkTagInc/gtfs-to-chart") Created with GTFS-to-Chart
+      a(href="https://github.com/BlinkTagInc/gtfs-to-chart" class=agencyKey) Created with GTFS-to-Chart

@@ -114,7 +114,8 @@ function renderChart(data) {
 
   const chartTimezone = getChartTimezone(stations);
 
-  const formatStationName = station => `${station.stop_short_name ?? station.name}, ${station.state}`;
+  const formatStationName = station => station.stop_short_name ?? station.name;
+  const formatStationState = station => station.state ?? '';
 
   const startOfFirstTrip = _.min(trips.flatMap(trip => trip.stoptimes.map(stoptime => moment(stoptime.arrival_time_utc)))).tz(chartTimezone).startOf('day');
   const labelPlacementTimes = [0, 1, 2, 3, 4, 5].map(i => moment(startOfFirstTrip).add(74.5, 'hours').add(i, 'days').toDate());
@@ -138,7 +139,7 @@ function renderChart(data) {
 
   const height = formattedTrips.length > 75 ? formattedTrips.length > 150 ? 8000 : 6000 : 5000;
   const width = Math.max(360, 120 + 15 * stations.length);
-  const topMargin = 20 + (_.max(_.map(stations, station => `${station.stop_code} | ${formatStationName(station)}`.length)) * 6.0);
+  const topMargin = 20 + (_.max(_.map(stations, station => `${station.stop_code} | ${formatStationName(station)}, ${formatStationState(station)}`.length)) * 6.0);
   const margin = ({ top: topMargin, right: 70, bottom: topMargin, left: 80 });
 
   const primaryDirectionId = getPrimaryDirectionId(stations);
@@ -196,7 +197,10 @@ function renderChart(data) {
           .style('font', 'bold 14px Roboto, sans-serif')
           .text(d => `${d.stop_code}`);
         text.append('tspan')
-          .text(d => ` | ${formatStationName(d)}`);
+          .text(d => ` | ${formatStationName(d)} `);
+        text.append('tspan')
+          .style('font', '11px "Roboto Condensed", sans-serif')
+          .text(d => `${formatStationState(d)}`);
       })
     )
     .style('display', d => d.stop_id !== 'LKL' && d.direction_id === primaryDirectionId ? 'block' : 'none')
@@ -208,7 +212,12 @@ function renderChart(data) {
       .attr('dy', '0.35em')
       .call(text => {
         text.append('tspan')
-          .text(d => `${formatStationName(d)} | `);
+          .text(d => `${formatStationName(d)} `);
+        text.append('tspan')
+          .style('font', '11px "Roboto Condensed", sans-serif')
+          .text(d => formatStationState(d));
+        text.append('tspan')
+          .text(d => ' | ');
         text.append('tspan')
           .style('font', 'bold 14px Roboto, sans-serif')
           .text(d => `${d.stop_code}`);
@@ -296,7 +305,7 @@ function renderChart(data) {
         d3.select(`#g_${d.trip.id} .path_bkgd`)
           .attr('stroke-width', 9);
         tooltip.style('display', null);
-        line1.text(`${d.stop.station.stop_code} | ${formatStationName(d.stop.station)}`);
+        line1.text(`${d.stop.station.stop_code} | ${formatStationName(d.stop.station)}, ${formatStationState(d.stop.station)}`);
         line2.text(formatStopTime(d.stop));
         line3.text(`${d.trip.route_long_name} ${d.trip.number}`);
         line4.text(`to ${d.trip.trip_headsign}`);

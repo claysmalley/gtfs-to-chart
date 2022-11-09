@@ -39,6 +39,10 @@ h3 {
   background: #333333;
 }
 
-a {
+a.amtrak {
   color: #33bbff;
+}
+
+a.via_rail {
+  color: #ffcc00;
 }
