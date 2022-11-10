@@ -142,7 +142,7 @@ function renderChart(data) {
   const height = formattedTrips.length > 75 ? formattedTrips.length > 150 ? 8000 : 6000 : 5000;
   const width = Math.max(360, 120 + 15 * stations.length);
   const topMargin = 20 + (_.max(_.map(stations, station => `${station.stop_code} | ${formatStationName(station)}, ${formatStationState(station)}`.length)) * 6.0);
-  const margin = ({ top: topMargin, right: 70, bottom: topMargin, left: 80 });
+  const margin = ({ top: topMargin, right: 80, bottom: 80, left: 80 });
 
   const primaryDirectionId = getPrimaryDirectionId(stations);
 
@@ -167,10 +167,6 @@ function renderChart(data) {
     .call(g => g.append('line')
       .attr('y1', margin.top - 6)
       .attr('y2', margin.top)
-      .attr('stroke', 'currentColor'))
-    .call(g => g.append('line')
-      .attr('y1', height - margin.bottom + 6)
-      .attr('y2', height - margin.bottom)
       .attr('stroke', 'currentColor'))
     .call(g => g.append('line')
       .attr('y1', margin.top)
@@ -205,26 +201,7 @@ function renderChart(data) {
           .text(d => `${formatStationState(d)}`);
       })
     )
-    .style('display', d => d.stop_id !== 'LKL' && d.direction_id === primaryDirectionId ? 'block' : 'none')
-    .call(g => g.append('text')
-      .attr('text-anchor', 'end')
-      .attr('transform', `translate(5,${height - margin.top}) rotate(-70)`)
-      .attr('fill', 'currentColor')
-      .attr('x', -12)
-      .attr('dy', '0.35em')
-      .call(text => {
-        text.append('tspan')
-          .text(d => `${formatStationName(d)} `);
-        text.append('tspan')
-          .style('font', '11px "Roboto Condensed", sans-serif')
-          .text(d => formatStationState(d));
-        text.append('tspan')
-          .text(d => ' | ');
-        text.append('tspan')
-          .style('font', 'bold 14px Roboto, sans-serif')
-          .text(d => `${d.stop_code}`);
-      })
-    );
+    .style('display', d => d.stop_id !== 'LKL' && d.direction_id === primaryDirectionId ? 'block' : 'none');
 
   const isMajorHour = d => moment(d).tz(chartTimezone).format('H') % 6 == 0;
 
