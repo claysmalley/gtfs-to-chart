@@ -1,10 +1,14 @@
 /* global _, d3, moment, fetch, chartData */
 /* eslint no-var: "off", prefer-arrow-callback: "off", no-unused-vars: "off" */
 
-function padTimeRange(range) {
+function padTimeRange(range, chartTimezone) {
+  const startCutoff = moment().tz(chartTimezone).startOf('day').add(11, 'hours');
+  const endCutoff = moment(startCutoff).add(6, 'days').add(2, 'hours');
+  const firstTripStart = moment(range[0]).startOf('hour');
+  const lastTripEnd = moment(range[1]).add(30, 'minutes');
   return [
-    moment(range[0]).startOf('hour'),
-    moment(range[1]).add(30, 'minutes')
+    firstTripStart.isBefore(startCutoff) ? firstTripStart : startCutoff,
+    lastTripEnd.isAfter(endCutoff) ? lastTripEnd : endCutoff,
   ];
 }
 
@@ -114,7 +118,6 @@ function renderChart(data) {
   const formatStationState = station => station.state ?? '';
 
   const startOfFirstTrip = _.min(trips.flatMap(trip => trip.stoptimes.map(stoptime => moment(stoptime.arrival_time_utc)))).tz(chartTimezone).startOf('day');
-  const labelPlacementTimes = [0, 1, 2, 3, 4, 5].map(i => moment(startOfFirstTrip).add(74.5, 'hours').add(i, 'days').toDate());
 
   const formattedTrips = _.uniqBy(trips, trip => JSON.stringify(trip.stoptimes))
     .map(trip => ({
@@ -132,6 +135,9 @@ function renderChart(data) {
     trip,
     stop
   })));
+  const startOfFirstDay = moment(d3.extent(stops, s => s.stop.time)[0]).tz(chartTimezone).startOf('day');
+
+  const labelPlacementTimes = [0, 1, 2, 3, 4, 5].map(i => moment().tz(chartTimezone).startOf('day').add(26.5, 'hours').add(i, 'days').toDate());
 
   const height = formattedTrips.length > 75 ? formattedTrips.length > 150 ? 8000 : 6000 : 5000;
   const width = Math.max(360, 120 + 15 * stations.length);
@@ -149,7 +155,7 @@ function renderChart(data) {
     .range([margin.left + 10, width - margin.right]);
 
   const y = d3.scaleUtc()
-    .domain(padTimeRange(d3.extent(stops, s => s.stop.time)))
+    .domain(padTimeRange(d3.extent(stops, s => s.stop.time), chartTimezone))
     .range([margin.top, height - margin.bottom]);
 
   const xAxis = g => g
@@ -343,7 +349,6 @@ function renderChart(data) {
   svg.append('g')
     .call(xAxis);
 
-  const startOfFirstDay = moment(d3.extent(stops, s => s.stop.time)[0]).tz(chartTimezone).startOf('day');
 
   const dayColor = 'khaki';
   const nightColor = 'mediumslateblue';
