@@ -12,10 +12,10 @@ function padTimeRange(range, chartTimezone) {
   ];
 }
 
-function geStopsFromStoptimes(stoptimes, stations, startOfFirstTrip, days) {
+function geStopsFromStoptimes(stoptimes, stations, chartTimezone, days) {
   /* eslint-disable-next-line unicorn/no-array-reduce */
-  const startCutoff = moment(startOfFirstTrip).add(4, 'days').subtract(30, 'minutes');
-  const endCutoff = moment(startOfFirstTrip).add(4 + days, 'days').add(30, 'minutes');
+  const startCutoff = moment().tz(chartTimezone).startOf('day').subtract(30, 'minutes');
+  const endCutoff = moment(startCutoff).add(days, 'days').add(1, 'hour');
   const stops = stoptimes.reduce((memo, stoptime) => {
     const station = stations.find(station => station.stop_id === stoptime.stop_id);
     const arrival = moment(stoptime.arrival_time_utc);
@@ -117,15 +117,13 @@ function renderChart(data) {
   const formatStationName = station => station.stop_short_name ?? station.name;
   const formatStationState = station => station.state ?? '';
 
-  const startOfFirstTrip = _.min(trips.flatMap(trip => trip.stoptimes.map(stoptime => moment(stoptime.arrival_time_utc)))).tz(chartTimezone).startOf('day');
-
   const formattedTrips = _.uniqBy(trips, trip => JSON.stringify(trip.stoptimes))
     .map(trip => ({
       id: `${trip.start_day}_${trip.trip_id}`,
       number: trip.trip_short_name,
       direction: trip.direction_id,
       trip_headsign: shortenStationName(trip.trip_headsign),
-      stops: geStopsFromStoptimes(trip.stoptimes, stations, startOfFirstTrip, 7),
+      stops: geStopsFromStoptimes(trip.stoptimes, stations, chartTimezone, 7),
       route_id: trip.route_id,
       route_long_name: trip.route_long_name,
     }))
