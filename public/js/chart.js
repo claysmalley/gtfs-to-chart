@@ -14,8 +14,8 @@ function padTimeRange(range, chartTimezone) {
 
 function geStopsFromStoptimes(stoptimes, stations, startOfFirstTrip, days) {
   /* eslint-disable-next-line unicorn/no-array-reduce */
-  const startCutoff = moment(startOfFirstTrip).add(2, 'days').subtract(30, 'minutes');
-  const endCutoff = moment(startOfFirstTrip).add(2 + days, 'days').add(30, 'minutes');
+  const startCutoff = moment(startOfFirstTrip).add(4, 'days').subtract(30, 'minutes');
+  const endCutoff = moment(startOfFirstTrip).add(4 + days, 'days').add(30, 'minutes');
   const stops = stoptimes.reduce((memo, stoptime) => {
     const station = stations.find(station => station.stop_id === stoptime.stop_id);
     const arrival = moment(stoptime.arrival_time_utc);
