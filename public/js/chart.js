@@ -203,7 +203,7 @@ function renderChart(data) {
     )
     .style('display', d => d.stop_id !== 'LKL' && d.direction_id === primaryDirectionId ? 'block' : 'none');
 
-  const isMajorHour = d => moment(d).tz(chartTimezone).format('H') % 6 == 0;
+  const isMajorHour = d => moment(d).tz(chartTimezone).format('H') % 12 == 0;
 
   const yAxis = g => g
     .style('font', '14px Roboto, sans-serif')
@@ -212,7 +212,7 @@ function renderChart(data) {
       .ticks(d3.utcHour)
       .tickFormat((time) => {
         const timeMoment = moment(time).tz(chartTimezone);
-        return timeMoment.format('H') % 12 == 0 ? timeMoment.format('ddd ha') : timeMoment.format('ha');
+        return isMajorHour(timeMoment) ? timeMoment.format('ddd ha') : timeMoment.format('ha');
       }))
     .call(g => g.select('.domain').remove())
     .call(g => g.selectAll('.tick line')
