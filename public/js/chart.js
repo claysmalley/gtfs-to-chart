@@ -171,8 +171,10 @@ function renderChart(data) {
     .call(g => g.append('line')
       .attr('y1', margin.top)
       .attr('y2', height - margin.bottom)
-      .attr('stroke-dasharray', d => d.major ? '' : '0.5,3')
-      .attr('stroke-width', 0.5)
+      .classed('path_station', true)
+      .attr('id', d => `path_station_${d.stop_code}`)
+      .attr('stroke-width', 1)
+      .attr('opacity', 0)
       .attr('stroke', 'currentColor'))
     .call(g => labelPlacementTimes.forEach(time => {
       g.append('text')
@@ -263,16 +265,22 @@ function renderChart(data) {
       .attr('d', (d, i) => voronoi.renderCell(i))
       .on('mouseout', () => {
         tooltip.style('display', 'none');
+        d3.selectAll('.path_station')
+          .attr('opacity', 0);
         d3.selectAll('.path')
           .attr('stroke-width', 2.5);
         d3.selectAll('.path_bkgd')
           .attr('stroke-width', 6);
       })
       .on('mouseover', d => {
+        d3.selectAll('.path_station')
+          .attr('opacity', 0);
         d3.selectAll('.path')
           .attr('stroke-width', 2.5);
         d3.selectAll('.path_bkgd')
           .attr('stroke-width', 6);
+        d3.select(`#path_station_${d.stop.station.stop_code}`)
+          .attr('opacity', 1);
         d3.select(`#stops_${d.trip.id}`)
           .raise();
         d3.select(`#dwells_${d.trip.id}`)
