@@ -363,7 +363,7 @@ function renderChart(data) {
         .attr('offset', d => d.offset)
         .attr('stop-color', d => d.color);
 
-  const trainIsEven = d => ((d.number.replace(/\D/i, '')) % 2 == 0) != (d.swap_evenodd);
+  const trainIsEven = d => ((d.number.replace(/\D/g, '')) % 2 == 0) != d.swap_evenodd;
   const trainIsOdd = d => !trainIsEven(d);
   const reverseIfUpsideDown = d => d.length === 0 ? [] : d[0].station.distance < d[d.length - 1].station.distance ? d : [...d].reverse();
 
