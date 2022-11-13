@@ -1,17 +1,21 @@
 /* global _, d3, moment, fetch, chartData */
 /* eslint no-var: "off", prefer-arrow-callback: "off", no-unused-vars: "off" */
 
-function padTimeRange(range) {
+function padTimeRange(range, chartTimezone) {
+  const startCutoff = moment().tz(chartTimezone).startOf('day').add(11, 'hours');
+  const endCutoff = moment(startCutoff).add(6, 'days').add(2, 'hours');
+  const firstTripStart = moment(range[0]).startOf('hour');
+  const lastTripEnd = moment(range[1]).add(30, 'minutes');
   return [
-    moment(range[0]).startOf('hour'),
-    moment(range[1]).add(30, 'minutes')
+    firstTripStart.isBefore(startCutoff) ? firstTripStart : startCutoff,
+    lastTripEnd.isAfter(endCutoff) ? lastTripEnd : endCutoff,
   ];
 }
 
-function geStopsFromStoptimes(stoptimes, stations, startOfFirstTrip, days) {
+function geStopsFromStoptimes(stoptimes, stations, chartTimezone, days) {
   /* eslint-disable-next-line unicorn/no-array-reduce */
-  const startCutoff = moment(startOfFirstTrip).add(2, 'days').subtract(30, 'minutes');
-  const endCutoff = moment(startOfFirstTrip).add(2 + days, 'days').add(30, 'minutes');
+  const startCutoff = moment().tz(chartTimezone).startOf('day').subtract(30, 'minutes');
+  const endCutoff = moment(startCutoff).add(days, 'days').add(1, 'hour');
   const stops = stoptimes.reduce((memo, stoptime) => {
     const station = stations.find(station => station.stop_id === stoptime.stop_id);
     if (!station) {
@@ -45,10 +49,6 @@ function geStopsFromStoptimes(stoptimes, stations, startOfFirstTrip, days) {
     return memo;
   }, []);
   return stops.length === 0 ? [] : stops;
-}
-
-function shortenStationName(name) {
-  return name.replace(/ Bus Stop$/i, "").replace(/ Passenger Terminal$/i, "").replace(/ Station$/i, "").replace(/ Auto Train$/i, "").replace(/ Union$/i, "").replace(/ Amtrak$/i, "").replace(/ Moynihan Train Hall at/i, "").replace(/ Transportation Center$/i, "").replace(/ Regional$/i, "");
 }
 
 function formatTimezoneName(timezone) {
@@ -115,19 +115,17 @@ function renderChart(data) {
   const chartTimezone = getChartTimezone(stations);
 
   const formatStationName = station => station.stop_short_name ?? station.name;
-  const formatStationState = station => station.state ?? '';
-
-  const startOfFirstTrip = _.min(trips.flatMap(trip => trip.stoptimes.map(stoptime => moment(stoptime.arrival_time_utc)))).tz(chartTimezone).startOf('day');
-  const labelPlacementTimes = [0, 1, 2, 3, 4, 5].map(i => moment(startOfFirstTrip).add(74.5, 'hours').add(i, 'days').toDate());
+  const formatStationState = station => station.state ? `, ${station.state}` : '';
 
   const formattedTrips = _.uniqBy(trips, trip => JSON.stringify(trip.stoptimes))
     .map(trip => ({
       id: `${trip.start_day}_${trip.trip_id}`,
-      number: trip.trip_short_name,
+      number: trip.trip_short_name ?? '',
       direction: trip.direction_id,
-      trip_headsign: shortenStationName(trip.trip_headsign),
-      stops: geStopsFromStoptimes(trip.stoptimes, stations, startOfFirstTrip, 7),
+      destination: trip.destination,
+      stops: geStopsFromStoptimes(trip.stoptimes, stations, chartTimezone, 7),
       route_id: trip.route_id,
+      swap_evenodd: trip.swap_evenodd,
       route_long_name: trip.route_long_name,
     }))
     .filter(trip => _.uniq(trip.stops.map(stop => stop.station.stop_id)).length >= 2);
@@ -136,11 +134,14 @@ function renderChart(data) {
     trip,
     stop
   })));
+  const startOfFirstDay = moment(d3.extent(stops, s => s.stop.time)[0]).tz(chartTimezone).startOf('day');
+
+  const labelPlacementTimes = [0, 1, 2, 3, 4, 5].map(i => moment().tz(chartTimezone).startOf('day').add(26.5, 'hours').add(i, 'days').toDate());
 
   const height = formattedTrips.length > 75 ? formattedTrips.length > 150 ? 8000 : 6000 : 5000;
   const width = Math.max(360, 120 + 15 * stations.length);
-  const topMargin = 20 + (_.max(_.map(stations, station => `${station.stop_code} | ${formatStationName(station)}, ${formatStationState(station)}`.length)) * 6.0);
-  const margin = ({ top: topMargin, right: 70, bottom: topMargin, left: 80 });
+  const topMargin = 20 + (_.max(_.map(stations, station => `${station.stop_code ?? ''} | ${formatStationName(station)} ${station.state ?? ''}`.length)) * 6.0);
+  const margin = ({ top: topMargin, right: 80, bottom: 80, left: 80 });
 
   const primaryDirectionId = getPrimaryDirectionId(stations);
 
@@ -153,7 +154,7 @@ function renderChart(data) {
     .range([margin.left + 10, width - margin.right]);
 
   const y = d3.scaleUtc()
-    .domain(padTimeRange(d3.extent(stops, s => s.stop.time)))
+    .domain(padTimeRange(d3.extent(stops, s => s.stop.time), chartTimezone))
     .range([margin.top, height - margin.bottom]);
 
   const xAxis = g => g
@@ -167,14 +168,12 @@ function renderChart(data) {
       .attr('y2', margin.top)
       .attr('stroke', 'currentColor'))
     .call(g => g.append('line')
-      .attr('y1', height - margin.bottom + 6)
-      .attr('y2', height - margin.bottom)
-      .attr('stroke', 'currentColor'))
-    .call(g => g.append('line')
       .attr('y1', margin.top)
       .attr('y2', height - margin.bottom)
-      .attr('stroke-dasharray', d => d.major ? '' : '0.5,3')
-      .attr('stroke-width', 0.5)
+      .classed('path_station', true)
+      .attr('id', d => `path_station_${d.stop_id}`)
+      .attr('stroke-width', 1)
+      .attr('opacity', 0)
       .attr('stroke', 'currentColor'))
     .call(g => labelPlacementTimes.forEach(time => {
       g.append('text')
@@ -185,7 +184,7 @@ function renderChart(data) {
         .attr('stroke-width', 3)
         .attr('text-anchor', 'middle')
         .attr('transform', `translate(5,${y(time)}) rotate(-90)`)
-        .text(d => d.stop_code);
+        .text(d => d.stop_code ?? formatStationName(d));
     }))
     .call(g => g.append('text')
       .attr('transform', `translate(-5,${margin.top}) rotate(-70)`)
@@ -195,36 +194,17 @@ function renderChart(data) {
       .call(text => {
         text.append('tspan')
           .style('font', 'bold 14px Roboto, sans-serif')
-          .text(d => `${d.stop_code}`);
-        text.append('tspan')
-          .text(d => ` | ${formatStationName(d)} `);
-        text.append('tspan')
-          .style('font', '11px "Roboto Condensed", sans-serif')
-          .text(d => `${formatStationState(d)}`);
-      })
-    )
-    .style('display', d => d.stop_id !== 'LKL' && d.direction_id === primaryDirectionId ? 'block' : 'none')
-    .call(g => g.append('text')
-      .attr('text-anchor', 'end')
-      .attr('transform', `translate(5,${height - margin.top}) rotate(-70)`)
-      .attr('fill', 'currentColor')
-      .attr('x', -12)
-      .attr('dy', '0.35em')
-      .call(text => {
+          .text(d => d.stop_code ? `${d.stop_code} | ` : '');
         text.append('tspan')
           .text(d => `${formatStationName(d)} `);
         text.append('tspan')
           .style('font', '11px "Roboto Condensed", sans-serif')
-          .text(d => formatStationState(d));
-        text.append('tspan')
-          .text(d => ' | ');
-        text.append('tspan')
-          .style('font', 'bold 14px Roboto, sans-serif')
-          .text(d => `${d.stop_code}`);
+          .text(d => d.state ?? '');
       })
-    );
+    )
+    .style('display', d => d.stop_id !== 'LKL' && d.direction_id === primaryDirectionId ? 'block' : 'none');
 
-  const isMajorHour = d => moment(d).tz(chartTimezone).format('H') % 6 == 0;
+  const isMajorHour = d => moment(d).tz(chartTimezone).format('H') % 12 == 0;
 
   const yAxis = g => g
     .style('font', '14px Roboto, sans-serif')
@@ -233,7 +213,7 @@ function renderChart(data) {
       .ticks(d3.utcHour)
       .tickFormat((time) => {
         const timeMoment = moment(time).tz(chartTimezone);
-        return timeMoment.format('H') % 12 == 0 ? timeMoment.format('ddd ha') : timeMoment.format('ha');
+        return isMajorHour(timeMoment) ? timeMoment.format('ddd ha') : timeMoment.format('ha');
       }))
     .call(g => g.select('.domain').remove())
     .call(g => g.selectAll('.tick line')
@@ -284,16 +264,22 @@ function renderChart(data) {
       .attr('d', (d, i) => voronoi.renderCell(i))
       .on('mouseout', () => {
         tooltip.style('display', 'none');
+        d3.selectAll('.path_station')
+          .attr('opacity', 0);
         d3.selectAll('.path')
           .attr('stroke-width', 2.5);
         d3.selectAll('.path_bkgd')
           .attr('stroke-width', 6);
       })
       .on('mouseover', d => {
+        d3.selectAll('.path_station')
+          .attr('opacity', 0);
         d3.selectAll('.path')
           .attr('stroke-width', 2.5);
         d3.selectAll('.path_bkgd')
           .attr('stroke-width', 6);
+        d3.select(`#path_station_${d.stop.station.stop_id}`)
+          .attr('opacity', 1);
         d3.select(`#stops_${d.trip.id}`)
           .raise();
         d3.select(`#dwells_${d.trip.id}`)
@@ -305,10 +291,10 @@ function renderChart(data) {
         d3.select(`#g_${d.trip.id} .path_bkgd`)
           .attr('stroke-width', 9);
         tooltip.style('display', null);
-        line1.text(`${d.stop.station.stop_code} | ${formatStationName(d.stop.station)}, ${formatStationState(d.stop.station)}`);
+        line1.text(`${d.stop.station.stop_code ?? ''}${d.stop.station.stop_code ? ' | ' : ''}${formatStationName(d.stop.station)}${formatStationState(d.stop.station)}`);
         line2.text(formatStopTime(d.stop));
         line3.text(`${d.trip.route_long_name} ${d.trip.number}`);
-        line4.text(`to ${d.trip.trip_headsign}`);
+        line4.text(`to ${d.trip.destination.stop_short_name}`);
         path.attr('stroke', 'rgb(34, 34, 34)');
         const box = text.node().getBBox();
         path.attr('d', `
@@ -347,7 +333,6 @@ function renderChart(data) {
   svg.append('g')
     .call(xAxis);
 
-  const startOfFirstDay = moment(d3.extent(stops, s => s.stop.time)[0]).tz(chartTimezone).startOf('day');
 
   const dayColor = 'khaki';
   const nightColor = 'mediumslateblue';
@@ -382,8 +367,8 @@ function renderChart(data) {
         .attr('offset', d => d.offset)
         .attr('stop-color', d => d.color);
 
-  const trainIsEven = d => (d.number % 2 == 0) != (d.route_id == 78);
-  const trainIsOdd = d => (d.number % 2 != 0) != (d.route_id == 78);
+  const trainIsEven = d => ((d.number.replace(/\D/g, '')) % 2 == 0) != d.swap_evenodd;
+  const trainIsOdd = d => !trainIsEven(d);
   const reverseIfUpsideDown = d => d.length === 0 ? [] : d[0].station.distance < d[d.length - 1].station.distance ? d : [...d].reverse();
 
   const vehiclePath = svg.append('g')
@@ -425,12 +410,12 @@ function renderChart(data) {
     .attr('xlink:href', d => `#path_${d.id}`)
     .style('text-anchor', 'middle')
     .text(d => d.number)
-    .attr('startOffset', d => d.number % 2 == 0 ? '20%' : '30%')
+    .attr('startOffset', d => trainIsEven(d) ? '20%' : '30%')
     .attr('stroke-width', '3')
     .attr('stroke', '#222222')
     .attr('paint-order', 'stroke')
     .clone(true)
-    .attr('startOffset', d => d.number % 2 == 0 ? '70%' : '80%');
+    .attr('startOffset', d => trainIsEven(d) ? '70%' : '80%');
 
   const dwells = stops => {
     var result = [];

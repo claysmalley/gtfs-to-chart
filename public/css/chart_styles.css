@@ -46,3 +46,23 @@ a.amtrak {
 a.via_rail {
   color: #ffcc00;
 }
+
+a.bc_ferries {
+  color: #33bbff;
+}
+
+a.brightline {
+  color: #ffdb00;
+}
+
+a.trirail {
+  color: #0099d8;
+}
+
+a.wsf {
+  color: #00ab8f;
+}
+
+a.blackball {
+  color: #d93228;
+}
