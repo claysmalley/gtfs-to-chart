@@ -47,10 +47,6 @@ function geStopsFromStoptimes(stoptimes, stations, chartTimezone, days) {
   return stops.length === 0 ? [] : stops;
 }
 
-function shortenStationName(name) {
-  return (name ?? '').replace(/ Bus Stop$/i, "").replace(/ Passenger Terminal$/i, "").replace(/ Station$/i, "").replace(/ Auto Train$/i, "").replace(/ Union$/i, "").replace(/ Amtrak$/i, "").replace(/ Moynihan Train Hall at/i, "").replace(/ Transportation Center$/i, "").replace(/ Regional$/i, "");
-}
-
 function formatTimezoneName(timezone) {
   return moment().tz(timezone).zoneAbbr();
 }
@@ -122,7 +118,7 @@ function renderChart(data) {
       id: `${trip.start_day}_${trip.trip_id}`,
       number: trip.trip_short_name ?? '',
       direction: trip.direction_id,
-      trip_headsign: shortenStationName(trip.trip_headsign),
+      destination: trip.destination,
       stops: geStopsFromStoptimes(trip.stoptimes, stations, chartTimezone, 7),
       route_id: trip.route_id,
       route_long_name: trip.route_long_name,
@@ -293,7 +289,7 @@ function renderChart(data) {
         line1.text(`${d.stop.station.stop_code ?? ''}${d.stop.station.stop_code ? ' | ' : ''}${formatStationName(d.stop.station)}${formatStationState(d.stop.station)}`);
         line2.text(formatStopTime(d.stop));
         line3.text(`${d.trip.route_long_name} ${d.trip.number}`);
-        line4.text(`to ${d.trip.trip_headsign}`);
+        line4.text(`to ${d.trip.destination.stop_short_name}`);
         path.attr('stroke', 'rgb(34, 34, 34)');
         const box = text.node().getBBox();
         path.attr('d', `
