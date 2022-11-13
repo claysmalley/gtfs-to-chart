@@ -115,7 +115,7 @@ function renderChart(data) {
   const chartTimezone = getChartTimezone(stations);
 
   const formatStationName = station => station.stop_short_name ?? station.name;
-  const formatStationState = station => station.state ?? '';
+  const formatStationState = station => station.state ? `, ${station.state}` : '';
 
   const formattedTrips = _.uniqBy(trips, trip => JSON.stringify(trip.stoptimes))
     .map(trip => ({
@@ -139,7 +139,7 @@ function renderChart(data) {
 
   const height = formattedTrips.length > 75 ? formattedTrips.length > 150 ? 8000 : 6000 : 5000;
   const width = Math.max(360, 120 + 15 * stations.length);
-  const topMargin = 20 + (_.max(_.map(stations, station => `${station.stop_code} | ${formatStationName(station)}, ${formatStationState(station)}`.length)) * 6.0);
+  const topMargin = 20 + (_.max(_.map(stations, station => `${station.stop_code} | ${formatStationName(station)} ${station.state ?? ''}`.length)) * 6.0);
   const margin = ({ top: topMargin, right: 80, bottom: 80, left: 80 });
 
   const primaryDirectionId = getPrimaryDirectionId(stations);
@@ -198,7 +198,7 @@ function renderChart(data) {
           .text(d => ` | ${formatStationName(d)} `);
         text.append('tspan')
           .style('font', '11px "Roboto Condensed", sans-serif')
-          .text(d => `${formatStationState(d)}`);
+          .text(d => d.state ?? '');
       })
     )
     .style('display', d => d.stop_id !== 'LKL' && d.direction_id === primaryDirectionId ? 'block' : 'none');
@@ -290,7 +290,7 @@ function renderChart(data) {
         d3.select(`#g_${d.trip.id} .path_bkgd`)
           .attr('stroke-width', 9);
         tooltip.style('display', null);
-        line1.text(`${d.stop.station.stop_code} | ${formatStationName(d.stop.station)}, ${formatStationState(d.stop.station)}`);
+        line1.text(`${d.stop.station.stop_code} | ${formatStationName(d.stop.station)}${formatStationState(d.stop.station)}`);
         line2.text(formatStopTime(d.stop));
         line3.text(`${d.trip.route_long_name} ${d.trip.number}`);
         line4.text(`to ${d.trip.trip_headsign}`);
