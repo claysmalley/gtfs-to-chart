@@ -121,6 +121,7 @@ function renderChart(data) {
       destination: trip.destination,
       stops: geStopsFromStoptimes(trip.stoptimes, stations, chartTimezone, 7),
       route_id: trip.route_id,
+      swap_evenodd: trip.swap_evenodd,
       route_long_name: trip.route_long_name,
     }))
     .filter(trip => _.uniq(trip.stops.map(stop => stop.station.stop_id)).length >= 2);
@@ -362,7 +363,7 @@ function renderChart(data) {
         .attr('offset', d => d.offset)
         .attr('stop-color', d => d.color);
 
-  const trainIsEven = d => ((d.number.replace(/\D/i, '')) % 2 == 0) != (d.route_id == 78);
+  const trainIsEven = d => ((d.number.replace(/\D/i, '')) % 2 == 0) != (d.swap_evenodd);
   const trainIsOdd = d => !trainIsEven(d);
   const reverseIfUpsideDown = d => d.length === 0 ? [] : d[0].station.distance < d[d.length - 1].station.distance ? d : [...d].reverse();
 
