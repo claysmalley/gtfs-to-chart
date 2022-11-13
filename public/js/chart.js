@@ -48,7 +48,7 @@ function geStopsFromStoptimes(stoptimes, stations, chartTimezone, days) {
 }
 
 function shortenStationName(name) {
-  return name.replace(/ Bus Stop$/i, "").replace(/ Passenger Terminal$/i, "").replace(/ Station$/i, "").replace(/ Auto Train$/i, "").replace(/ Union$/i, "").replace(/ Amtrak$/i, "").replace(/ Moynihan Train Hall at/i, "").replace(/ Transportation Center$/i, "").replace(/ Regional$/i, "");
+  return (name ?? '').replace(/ Bus Stop$/i, "").replace(/ Passenger Terminal$/i, "").replace(/ Station$/i, "").replace(/ Auto Train$/i, "").replace(/ Union$/i, "").replace(/ Amtrak$/i, "").replace(/ Moynihan Train Hall at/i, "").replace(/ Transportation Center$/i, "").replace(/ Regional$/i, "");
 }
 
 function formatTimezoneName(timezone) {
@@ -120,7 +120,7 @@ function renderChart(data) {
   const formattedTrips = _.uniqBy(trips, trip => JSON.stringify(trip.stoptimes))
     .map(trip => ({
       id: `${trip.start_day}_${trip.trip_id}`,
-      number: trip.trip_short_name,
+      number: trip.trip_short_name ?? '',
       direction: trip.direction_id,
       trip_headsign: shortenStationName(trip.trip_headsign),
       stops: geStopsFromStoptimes(trip.stoptimes, stations, chartTimezone, 7),
