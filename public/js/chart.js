@@ -366,8 +366,8 @@ function renderChart(data) {
         .attr('offset', d => d.offset)
         .attr('stop-color', d => d.color);
 
-  const trainIsEven = d => (d.number % 2 == 0) != (d.route_id == 78);
-  const trainIsOdd = d => (d.number % 2 != 0) != (d.route_id == 78);
+  const trainIsEven = d => ((d.number.replace(/\D/i, '')) % 2 == 0) != (d.route_id == 78);
+  const trainIsOdd = d => !trainIsEven(d);
   const reverseIfUpsideDown = d => d.length === 0 ? [] : d[0].station.distance < d[d.length - 1].station.distance ? d : [...d].reverse();
 
   const vehiclePath = svg.append('g')
@@ -409,12 +409,12 @@ function renderChart(data) {
     .attr('xlink:href', d => `#path_${d.id}`)
     .style('text-anchor', 'middle')
     .text(d => d.number)
-    .attr('startOffset', d => d.number % 2 == 0 ? '20%' : '30%')
+    .attr('startOffset', d => trainIsEven(d) ? '20%' : '30%')
     .attr('stroke-width', '3')
     .attr('stroke', '#222222')
     .attr('paint-order', 'stroke')
     .clone(true)
-    .attr('startOffset', d => d.number % 2 == 0 ? '70%' : '80%');
+    .attr('startOffset', d => trainIsEven(d) ? '70%' : '80%');
 
   const dwells = stops => {
     var result = [];
