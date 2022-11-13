@@ -139,7 +139,7 @@ function renderChart(data) {
 
   const height = formattedTrips.length > 75 ? formattedTrips.length > 150 ? 8000 : 6000 : 5000;
   const width = Math.max(360, 120 + 15 * stations.length);
-  const topMargin = 20 + (_.max(_.map(stations, station => `${station.stop_code} | ${formatStationName(station)} ${station.state ?? ''}`.length)) * 6.0);
+  const topMargin = 20 + (_.max(_.map(stations, station => `${station.stop_code ?? ''} | ${formatStationName(station)} ${station.state ?? ''}`.length)) * 6.0);
   const margin = ({ top: topMargin, right: 80, bottom: 80, left: 80 });
 
   const primaryDirectionId = getPrimaryDirectionId(stations);
@@ -170,7 +170,7 @@ function renderChart(data) {
       .attr('y1', margin.top)
       .attr('y2', height - margin.bottom)
       .classed('path_station', true)
-      .attr('id', d => `path_station_${d.stop_code}`)
+      .attr('id', d => `path_station_${d.stop_id}`)
       .attr('stroke-width', 1)
       .attr('opacity', 0)
       .attr('stroke', 'currentColor'))
@@ -183,7 +183,7 @@ function renderChart(data) {
         .attr('stroke-width', 3)
         .attr('text-anchor', 'middle')
         .attr('transform', `translate(5,${y(time)}) rotate(-90)`)
-        .text(d => d.stop_code);
+        .text(d => d.stop_code ?? formatStationName(d));
     }))
     .call(g => g.append('text')
       .attr('transform', `translate(-5,${margin.top}) rotate(-70)`)
@@ -193,9 +193,9 @@ function renderChart(data) {
       .call(text => {
         text.append('tspan')
           .style('font', 'bold 14px Roboto, sans-serif')
-          .text(d => `${d.stop_code}`);
+          .text(d => d.stop_code ? `${d.stop_code} | ` : '');
         text.append('tspan')
-          .text(d => ` | ${formatStationName(d)} `);
+          .text(d => `${formatStationName(d)} `);
         text.append('tspan')
           .style('font', '11px "Roboto Condensed", sans-serif')
           .text(d => d.state ?? '');
@@ -277,7 +277,7 @@ function renderChart(data) {
           .attr('stroke-width', 2.5);
         d3.selectAll('.path_bkgd')
           .attr('stroke-width', 6);
-        d3.select(`#path_station_${d.stop.station.stop_code}`)
+        d3.select(`#path_station_${d.stop.station.stop_id}`)
           .attr('opacity', 1);
         d3.select(`#stops_${d.trip.id}`)
           .raise();
@@ -290,7 +290,7 @@ function renderChart(data) {
         d3.select(`#g_${d.trip.id} .path_bkgd`)
           .attr('stroke-width', 9);
         tooltip.style('display', null);
-        line1.text(`${d.stop.station.stop_code} | ${formatStationName(d.stop.station)}${formatStationState(d.stop.station)}`);
+        line1.text(`${d.stop.station.stop_code ?? ''}${d.stop.station.stop_code ? ' | ' : ''}${formatStationName(d.stop.station)}${formatStationState(d.stop.station)}`);
         line2.text(formatStopTime(d.stop));
         line3.text(`${d.trip.route_long_name} ${d.trip.number}`);
         line4.text(`to ${d.trip.trip_headsign}`);
