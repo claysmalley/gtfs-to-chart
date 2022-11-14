@@ -335,33 +335,79 @@ function renderChart(data) {
 
 
   const dayColor = 'khaki';
-  const nightColor = 'mediumslateblue';
+  const dawnDuskColor = 'darksalmon';
+  const nightColor = 'slateblue';
   svg.append('linearGradient')
       .attr('id', 'line-gradient')
       .attr('gradientUnits', 'userSpaceOnUse')
       .attr('x1', 0)
-      .attr('y1', y(startOfFirstDay))
+      .attr('y1', y(moment(startOfFirstDay).subtract(1, 'days')))
       .attr('x2', 0)
-      .attr('y2', y(startOfFirstDay.add(8, 'days')))
+      .attr('y2', y(moment(startOfFirstDay).add(9, 'days')))
       .selectAll('stop')
         .data([
           {offset: '0%', color: nightColor},
-          {offset: '6.25%', color: dayColor},
-          {offset: '12.5%', color: nightColor},
-          {offset: '18.75%', color: dayColor},
-          {offset: '25%', color: nightColor},
-          {offset: '31.25%', color: dayColor},
-          {offset: '37.5%', color: nightColor},
-          {offset: '43.75%', color: dayColor},
-          {offset: '50%', color: nightColor},
-          {offset: '56.25%', color: dayColor},
-          {offset: '62.5%', color: nightColor},
-          {offset: '68.75%', color: dayColor},
-          {offset: '75%', color: nightColor},
-          {offset: '81.25%', color: dayColor},
-          {offset: '87.5%', color: nightColor},
-          {offset: '93.75%', color: dayColor},
-          {offset: '100%', color: nightColor}
+          {offset: '1%', color: nightColor},
+          {offset: '2.5%', color: dawnDuskColor},
+          {offset: '4%', color: dayColor},
+          {offset: '6%', color: dayColor},
+          {offset: '7.5%', color: dawnDuskColor},
+          {offset: '9%', color: nightColor},
+          {offset: '11%', color: nightColor},
+          {offset: '12.5%', color: dawnDuskColor},
+          {offset: '14%', color: dayColor},
+          {offset: '16%', color: dayColor},
+          {offset: '17.5%', color: dawnDuskColor},
+          {offset: '19%', color: nightColor},
+          {offset: '21%', color: nightColor},
+          {offset: '22.5%', color: dawnDuskColor},
+          {offset: '24%', color: dayColor},
+          {offset: '26%', color: dayColor},
+          {offset: '27.5%', color: dawnDuskColor},
+          {offset: '29%', color: nightColor},
+          {offset: '31%', color: nightColor},
+          {offset: '32.5%', color: dawnDuskColor},
+          {offset: '34%', color: dayColor},
+          {offset: '36%', color: dayColor},
+          {offset: '37.5%', color: dawnDuskColor},
+          {offset: '39%', color: nightColor},
+          {offset: '41%', color: nightColor},
+          {offset: '42.5%', color: dawnDuskColor},
+          {offset: '44%', color: dayColor},
+          {offset: '46%', color: dayColor},
+          {offset: '47.5%', color: dawnDuskColor},
+          {offset: '49%', color: nightColor},
+          {offset: '51%', color: nightColor},
+          {offset: '52.5%', color: dawnDuskColor},
+          {offset: '54%', color: dayColor},
+          {offset: '56%', color: dayColor},
+          {offset: '57.5%', color: dawnDuskColor},
+          {offset: '59%', color: nightColor},
+          {offset: '61%', color: nightColor},
+          {offset: '62.5%', color: dawnDuskColor},
+          {offset: '64%', color: dayColor},
+          {offset: '66%', color: dayColor},
+          {offset: '67.5%', color: dawnDuskColor},
+          {offset: '69%', color: nightColor},
+          {offset: '71%', color: nightColor},
+          {offset: '72.5%', color: dawnDuskColor},
+          {offset: '74%', color: dayColor},
+          {offset: '76%', color: dayColor},
+          {offset: '77.5%', color: dawnDuskColor},
+          {offset: '79%', color: nightColor},
+          {offset: '81%', color: nightColor},
+          {offset: '82.5%', color: dawnDuskColor},
+          {offset: '84%', color: dayColor},
+          {offset: '86%', color: dayColor},
+          {offset: '87.5%', color: dawnDuskColor},
+          {offset: '89%', color: nightColor},
+          {offset: '91%', color: nightColor},
+          {offset: '92.5%', color: dawnDuskColor},
+          {offset: '94%', color: dayColor},
+          {offset: '96%', color: dayColor},
+          {offset: '97.5%', color: dawnDuskColor},
+          {offset: '99%', color: nightColor},
+          {offset: '100%', color: nightColor},
         ])
       .enter().append('stop')
         .attr('offset', d => d.offset)
