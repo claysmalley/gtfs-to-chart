@@ -39,6 +39,10 @@ h3 {
   background: #333333;
 }
 
+li {
+  list-style: none;
+}
+
 a.amtrak {
   color: #33bbff;
 }
