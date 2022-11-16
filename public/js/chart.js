@@ -115,7 +115,7 @@ function renderChart(data) {
   })));
   const startOfFirstDay = moment(d3.extent(stops, s => s.stop.time)[0]).tz(chartTimezone).startOf('day');
 
-  const labelPlacementTimes = [0, 1, 2, 3, 4, 5].map(i => moment().tz(chartTimezone).startOf('day').add(26.5, 'hours').add(i, 'days').toDate());
+  const labelPlacementTimes = [1, 2, 3, 4, 5, 6].map(i => moment().tz(chartTimezone).startOf('day').add(2.5 + i * 24, 'hours').toDate());
 
   const height = formattedTrips.length > 75 ? formattedTrips.length > 150 ? 8000 : 6000 : 5000;
   const width = Math.max(360, 120 + 15 * stations.length);
@@ -137,7 +137,7 @@ function renderChart(data) {
     .range([margin.top, height - margin.bottom]);
 
   const xAxis = g => g
-    .style('font', '14px "Roboto Condensed", sans-serif')
+    .style('font', 'bold 14px Roboto, sans-serif')
     .selectAll('g')
     .data(stations)
     .join('g')
@@ -156,7 +156,7 @@ function renderChart(data) {
       .attr('stroke', 'currentColor'))
     .call(g => labelPlacementTimes.forEach(time => {
       g.append('text')
-        .style('font', 'bold 14px "Roboto", sans-serif')
+        .style('font', '14px "Roboto Condensed", sans-serif')
         .attr('paint-order', 'stroke')
         .attr('fill', 'currentColor')
         .attr('stroke', '#222222')
@@ -172,12 +172,12 @@ function renderChart(data) {
       .attr('dy', '0.35em')
       .call(text => {
         text.append('tspan')
-          .style('font', 'bold 14px Roboto, sans-serif')
-          .text(d => d.stop_code ? `${d.stop_code} | ` : '');
+          .style('font', '14px "Roboto Condensed", sans-serif')
+          .text(d => d.stop_code ? `${d.stop_code} · ` : '');
         text.append('tspan')
           .text(d => `${formatStationName(d)} `);
         text.append('tspan')
-          .style('font', '11px "Roboto Condensed", sans-serif')
+          .style('font', '11px Roboto, sans-serif')
           .text(d => d.state ?? '');
       })
     )
@@ -414,7 +414,7 @@ function renderChart(data) {
     .attr('d', d => line(reverseIfUpsideDown(d.stops)));
 
   const vehicleText = svg.append('g')
-    .style('font', 'bold 14px "Roboto", sans-serif')
+    .style('font', 'bold 14px Roboto, sans-serif')
     .attr('fill', 'currentColor')
     .attr('transform', 'translate(0,-4)')
     .selectAll('g')
