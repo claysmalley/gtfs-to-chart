@@ -387,6 +387,7 @@ function renderChart(data) {
 
   const trainIsEven = d => ((d.number.replace(/\D/g, '')) % 2 == 0) != d.swap_evenodd;
   const trainIsOdd = d => !trainIsEven(d);
+  const trainIsShort = d => _.uniq(d.stops.map(stop => stop.station.stop_id)).length < 3;
   const reverseIfUpsideDown = d => d.length === 0 ? [] : d[0].station.distance < d[d.length - 1].station.distance ? d : [...d].reverse();
 
   const vehiclePath = svg.append('g')
@@ -427,13 +428,14 @@ function renderChart(data) {
     .append('textPath')
     .attr('xlink:href', d => `#path_${d.id}`)
     .style('text-anchor', 'middle')
-    .text(d => d.number)
-    .attr('startOffset', d => trainIsEven(d) ? '20%' : '30%')
     .attr('stroke-width', '3')
     .attr('stroke', '#222222')
     .attr('paint-order', 'stroke')
+    .text(d => d.number)
+    .attr('startOffset', d => `${18 + 14 * (trainIsOdd(d) | 0) + 25 * (trainIsShort(d) | 0)}%`)
     .clone(true)
-    .attr('startOffset', d => trainIsEven(d) ? '70%' : '80%');
+    .text(d => trainIsShort(d) ? '' : d.number)
+    .attr('startOffset', d => `${68 + 14 * (trainIsOdd(d) | 0)}%`);
 
   const dwells = stops => {
     var result = [];
