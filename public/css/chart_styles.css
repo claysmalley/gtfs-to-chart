@@ -42,39 +42,3 @@ h3 {
 li {
   list-style: none;
 }
-
-a.amtrak {
-  color: #33bbff;
-}
-
-a.via_rail {
-  color: #ffcc00;
-}
-
-a.bc_ferries {
-  color: #33bbff;
-}
-
-a.brightline {
-  color: #ffdb00;
-}
-
-a.nictd {
-  color: #f18421;
-}
-
-a.smart {
-  color: #e58e1a;
-}
-
-a.trirail {
-  color: #0099d8;
-}
-
-a.wsf {
-  color: #00ab8f;
-}
-
-a.blackball {
-  color: #d93228;
-}
