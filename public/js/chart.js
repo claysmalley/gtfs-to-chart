@@ -202,12 +202,30 @@ function renderChart(data) {
       }))
     .call(g => g.select('.domain').remove())
     .call(g => g.selectAll('.tick line')
-      .attr('stroke-width', 0.5)
-      .attr('stroke-dasharray', d => isMajorHour(d) ? '' : '0.5,3')
+      .attr('stroke-width', d => isMajorHour(d) ? 1 : 0.5)
+      .attr('stroke-dasharray', d => isMajorHour(d) ? '1,3' : '0.5,3.5')
       .clone().lower()
       .attr('x2', width))
     .call(g => g.selectAll('.tick text')
       .attr('font-weight', d => isMajorHour(d) ? 'bold' : 'regular'));
+
+  const nowLine = g => g
+    .attr('id', 'nowline')
+    .attr('transform', `translate(${margin.left},${y(new Date())})`)
+    .call(g => g.append('path')
+      .attr('stroke', 'currentColor')
+      .attr('fill', 'currentColor')
+      .attr('stroke-width', 1)
+      .attr('d', `M 0 0 l -4 2 l 0 -4 z`))
+    .call(g => g.append('path')
+      .attr('stroke', 'currentColor')
+      .attr('stroke-width', 1.5)
+      .attr('d', `M 0 0 h ${width}`));
+
+  const updateNowLine = setInterval(function() {
+    d3.select('#nowline')
+      .attr('transform', `translate(${margin.left},${y(new Date())})`)
+  }, 60000);
 
   const voronoi = d3.Delaunay
     .from(stops, d => x(d.stop.station.distance), d => y(d.stop.time))
@@ -307,6 +325,9 @@ function renderChart(data) {
 
   svg.append('g')
     .call(yAxis);
+
+  svg.append('g')
+    .call(nowLine);
 
   svg.append('g')
     .call(xAxis);
@@ -415,7 +436,7 @@ function renderChart(data) {
   vehiclePath.append('path')
     .classed('path', true)
     .attr('id', d => `path_${d.id}`)
-    .attr('stroke', d => 'url(#line-gradient)')
+    .attr('stroke', 'url(#line-gradient)')
     .attr('stroke-width', 2.5)
     .attr('stroke-linejoin', 'round')
     .attr('d', d => line(reverseIfUpsideDown(d.stops)));
