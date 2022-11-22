@@ -4,12 +4,32 @@ include formatting_functions.pug
 .chart-page
   .container
     .row.mt-4.mb-4
-      .col-md-12#header
-        h2.timetable-page-label
-          a(href="index.html" class=agencyKey) ‹ 
-          span= routeName
-        div
-          span= moment(config.chartDate, 'YYYYMMDD').format('MMMM D, YYYY')
+      .col-md-6
+        .row
+          .col
+            h2.timetable-page-label
+              a(href="index.html") ‹ 
+              span= routeName
+        .row
+          .col
+            span= moment(config.chartDate, 'YYYYMMDD').format('MMMM D, YYYY')
+        if !chartData.stations.every(station => station.timezone == chartData.chartTimezone)
+          .row
+            .col
+              span Times listed in
+              = " "
+              span(style='font-weight:bold;')= moment(config.chartDate, 'YYYYMMDD').tz(chartData.chartTimezone).zoneAbbr()
+              span . Hover over stop for local time.
+      .col-md-6
+        ul
+          li
+            input(type="checkbox" id="check_even" checked)
+            = " "
+            label(for="check_even") Show even trips
+          li
+            input(type="checkbox" id="check_odd" checked)
+            = " "
+            label(for="check_odd") Show odd trips
 
     .chart(id="chart")
 

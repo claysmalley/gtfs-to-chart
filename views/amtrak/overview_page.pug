@@ -20,7 +20,7 @@ block content
         div(class= config.showMap ? 'col-md-3' : 'col')
           .list-group
             each route in routes
-              a.list-group-item(href=`${route.relativePath}` class=agencyKey)
+              a.list-group-item(href=`${route.relativePath}`)
                 h4.list-group-item-heading.d-flex.align-items-center
                   if route.route_color
                     .route-color-swatch-large(style=`background-color: #${route.route_color}`)
