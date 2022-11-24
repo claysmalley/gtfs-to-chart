@@ -15,4 +15,3 @@ The chart generated shows stations across the x-axis, spaced to scale. Each line
 ## Credits
 
 This library was based off of code developed by [Mike Bostock](https://observablehq.com/@mbostock/mareys-trains).
-
