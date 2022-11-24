@@ -446,12 +446,12 @@ function renderChart(data) {
     .attr('d', d => line(reverseIfUpsideDown(d.stops)));
 
   const vehicleText = svg.append('g')
-    .style('font', 'bold 14px Roboto, sans-serif')
     .attr('fill', 'currentColor')
     .attr('transform', 'translate(0,-4)')
     .selectAll('g')
     .data(formattedTrips)
     .join('g')
+    .style('font', d => `bold ${d.number.length > 3 ? 11 : 14}px Roboto, sans-serif`)
     .classed('even', trainIsEven)
     .classed('odd', trainIsOdd);
 
