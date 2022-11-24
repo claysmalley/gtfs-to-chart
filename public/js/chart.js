@@ -108,7 +108,7 @@ function renderChart(data) {
 
   const formattedTrips = _.uniqBy(trips, trip => JSON.stringify(trip.stoptimes))
     .map(trip => ({
-      id: `${trip.start_day}_${trip.trip_id}`,
+      id: `${trip.start_day}_${trip.trip_id.replaceAll(/[^-_A-Za-z0-9]/g, '')}`,
       number: trip.trip_short_name ?? '',
       direction: trip.direction_id,
       destination: trip.destination,
