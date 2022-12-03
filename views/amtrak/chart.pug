@@ -38,4 +38,6 @@ include formatting_functions.pug
         li= note
 
     .row-mt-4.mb-4
-      a(href="https://github.com/BlinkTagInc/gtfs-to-chart" class=agencyKey) Created with GTFS-to-Chart
+      a(href=`${config.attributionURL}`)= `Data provided by ${config.attributionName}`
+    .row-mt-4.mb-4
+      a(href="https://github.com/BlinkTagInc/gtfs-to-chart") Created with GTFS-to-Chart
