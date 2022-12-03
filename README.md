@@ -1,8 +1,12 @@
-This is a fork of [gtfs-to-chart](https://github.com/BlinkTagInc/gtfs-to-chart), customized to display Amtrak schedules.
+* [Amtrak](https://claysmalley.github.io/gtfs-to-chart/charts/amtrak/index.html)
+* [VIA Rail Canada](https://claysmalley.github.io/gtfs-to-chart/charts/via_rail/index.html)
+* [Brightline](https://claysmalley.github.io/gtfs-to-chart/charts/brightline/florida.html)
+* [Tri-Rail](https://claysmalley.github.io/gtfs-to-chart/charts/trirail/trirail.html)
+* [NICTD South Shore Line](https://claysmalley.github.io/gtfs-to-chart/charts/nictd/south-shore.html)
+* [MARC](https://claysmalley.github.io/gtfs-to-chart/charts/marc/index.html)
+* [Sonoma-Marin Area Rail Transit](https://claysmalley.github.io/gtfs-to-chart/charts/smart/mainline.html)
 
-This project is **not** affiliated with the National Railroad Passenger Corporation (Amtrak). See [amtrak.com](https://www.amtrak.com/) for up-to-date schedules and train statuses.
-
-## gtfs-to-chart
+This is a customized fork of [gtfs-to-chart](https://github.com/BlinkTagInc/gtfs-to-chart).
 
 `gtfs-to-chart` creates stringline charts showing all vehicles on a transit route from GTFS data.
 
