@@ -16,8 +16,10 @@ function geStopsFromStoptimes(stoptimes, stations, chartTimezone, days) {
   /* eslint-disable-next-line unicorn/no-array-reduce */
   const startCutoff = moment().tz(chartTimezone).startOf('day').subtract(30, 'minutes');
   const endCutoff = moment(startCutoff).add(days, 'days').add(1, 'hour');
-  const stops = stoptimes.reduce((memo, stoptime) => {
-    const station = stations.find(station => station.stop_id === stoptime.stop_id);
+  var stops = [];
+  for(const i in stoptimes) {
+    const stoptime = stoptimes[i];
+    const station = stations.find((station) => station.stop_id === stoptime.stop_id);
     if (!station) {
       console.warn(`Could not find station ${stoptime.stop_id}`);
     } else {
@@ -25,13 +27,13 @@ function geStopsFromStoptimes(stoptimes, stations, chartTimezone, days) {
       const departure = moment(stoptime.departure_time_utc);
       if (departure.isAfter(startCutoff) && arrival.isBefore(endCutoff)) {
         if (stoptime.arrival_time_utc === stoptime.departure_time_utc) {
-          memo.push({
+          stops.push({
             station,
             time: new Date(stoptime.arrival_time_utc),
             type: 'stop'
           });
         } else {
-          memo.push(
+          stops.push(
             {
               station,
               time: new Date(stoptime.arrival_time_utc),
@@ -45,9 +47,7 @@ function geStopsFromStoptimes(stoptimes, stations, chartTimezone, days) {
         }
       }
     }
-
-    return memo;
-  }, []);
+  }
   return stops.length === 0 ? [] : stops;
 }
 
@@ -65,7 +65,7 @@ function formatStopTime(stop) {
 
 function getPrimaryDirectionId(stations) {
   const directionGroups = _.groupBy(stations, 'direction_id');
-  const largestDirectionGroup = _.maxBy(Object.values(directionGroups), group => group.length);
+  const largestDirectionGroup = _.maxBy(Object.values(directionGroups), (group) => group.length);
   return largestDirectionGroup[0].direction_id;
 }
 
@@ -103,14 +103,15 @@ function renderChart(data) {
 		"America/Fort_Wayne|US/East-Indiana",
   ]);
 
-  const formatStationName = station => station.stop_short_name ?? station.name;
-  const formatStationState = station => station.state ? `, ${station.state}` : '';
+  const formatStationName = (station) => station.stop_short_name ?? station.name;
+  const formatStationState = (station) => station.state ? `, ${station.state}` : '';
 
-  const formattedTrips = _.uniqBy(trips, trip => JSON.stringify(trip.stoptimes))
-    .map(trip => ({
+  const formattedTrips = _.uniqBy(trips, (trip) => JSON.stringify(trip.stoptimes))
+    .map((trip) => ({
       id: `${trip.start_day}_${trip.trip_id.replaceAll(/[^-_A-Za-z0-9]/g, '')}`,
       number: trip.trip_short_name ?? '',
       direction: trip.direction_id,
+      trip_headsign: trip.trip_headsign,
       destination: trip.destination,
       stops: geStopsFromStoptimes(trip.stoptimes, stations, chartTimezone, 7),
       route_id: trip.route_id,
@@ -119,7 +120,7 @@ function renderChart(data) {
     }))
     .filter(trip => _.uniq(trip.stops.map(stop => stop.station.stop_id)).length >= 2);
 
-  const stops = formattedTrips.flatMap(trip => trip.stops.map(stop => ({
+  const stops = formattedTrips.flatMap((trip) => trip.stops.map((stop) => ({
     trip,
     stop
   })));
@@ -129,42 +130,41 @@ function renderChart(data) {
 
   const height = formattedTrips.length > 75 ? formattedTrips.length > 150 ? 8000 : 6000 : 5000;
   const width = Math.max(360, 120 + 15 * stations.length);
-  const topMargin = 20 + (_.max(_.map(stations, station => `${station.stop_code ?? ''} | ${formatStationName(station)} ${station.state ?? ''}`.length)) * 6.0);
+  const topMargin = 20 + (_.max(_.map(stations, (station) => `${station.stop_code ?? ''} | ${formatStationName(station)} ${station.state ?? ''}`.length)) * 6.0);
   const margin = ({ top: topMargin, right: 80, bottom: 80, left: 80 });
 
   const primaryDirectionId = getPrimaryDirectionId(stations);
 
   const line = d3.line()
-    .x(d => x(d.station.distance))
-    .y(d => y(d.time));
+    .x((d) => x(d.station.distance))
+    .y((d) => y(d.time));
 
   const x = d3.scaleLinear()
-    .domain(d3.extent(stations, d => d.distance))
+    .domain(d3.extent(stations, (d) => d.distance))
     .range([margin.left + 10, width - margin.right]);
 
   const y = d3.scaleUtc()
-    .domain(padTimeRange(d3.extent(stops, s => s.stop.time), chartTimezone))
+    .domain(padTimeRange(d3.extent(stops, (s) => s.stop.time), chartTimezone))
     .range([margin.top, height - margin.bottom]);
-
-  const xAxis = g => g
+  const xAxis = (g) => g
     .style('font', 'bold 14px Roboto, sans-serif')
     .selectAll('g')
     .data(stations)
     .join('g')
-    .attr('transform', d => `translate(${x(d.distance)},0)`)
-    .call(g => g.append('line')
+    .attr('transform', (d) => `translate(${x(d.distance)},0)`)
+    .call((g) => g.append('line')
       .attr('y1', margin.top - 6)
       .attr('y2', margin.top)
       .attr('stroke', 'currentColor'))
-    .call(g => g.append('line')
+    .call((g) => g.append('line')
       .attr('y1', margin.top)
       .attr('y2', height - margin.bottom)
       .classed('path_station', true)
-      .attr('id', d => `path_station_${d.stop_id}`)
+      .attr('id', (d) => `path_station_${d.stop_id}`)
       .attr('stroke-width', 1)
       .attr('opacity', 0)
       .attr('stroke', 'currentColor'))
-    .call(g => labelPlacementTimes.forEach(time => {
+    .call((g) => labelPlacementTimes.forEach(time => {
       g.append('text')
         .style('font', '14px "Roboto Condensed", sans-serif')
         .attr('paint-order', 'stroke')
@@ -173,9 +173,9 @@ function renderChart(data) {
         .attr('stroke-width', 3)
         .attr('text-anchor', 'middle')
         .attr('transform', `translate(5,${y(time)}) rotate(-90)`)
-        .text(d => d.stop_code ?? formatStationName(d));
+        .text((d) => d.stop_code ?? formatStationName(d));
     }))
-    .call(g => g.append('text')
+    .call((g) => g.append('text')
       .attr('transform', `translate(-5,${margin.top}) rotate(-70)`)
       .attr('fill', 'currentColor')
       .attr('x', 12)
@@ -183,19 +183,19 @@ function renderChart(data) {
       .call(text => {
         text.append('tspan')
           .style('font', '14px "Roboto Condensed", sans-serif')
-          .text(d => d.stop_code ? `${d.stop_code} · ` : '');
+          .text((d) => d.stop_code ? `${d.stop_code} · ` : '');
         text.append('tspan')
-          .text(d => `${formatStationName(d)} `);
+          .text((d) => `${formatStationName(d)} `);
         text.append('tspan')
           .style('font', '11px Roboto, sans-serif')
-          .text(d => d.state ?? '');
+          .text((d) => d.state ?? '');
       })
     )
-    .style('display', d => d.stop_id !== 'LKL' && d.direction_id === primaryDirectionId ? 'block' : 'none');
+    .style('display', (d) => d.stop_id !== 'LKL' && d.direction_id === primaryDirectionId ? 'block' : 'none');
 
-  const isMajorHour = d => moment(d).tz(chartTimezone).format('H') % 12 == 0;
+  const isMajorHour = (d) => moment(d).tz(chartTimezone).format('H') % 12 == 0;
 
-  const yAxis = g => g
+  const yAxis = (g) => g
     .style('font', '14px Roboto, sans-serif')
     .attr('transform', `translate(${margin.left},0)`)
     .call(d3.axisLeft(y)
@@ -204,24 +204,24 @@ function renderChart(data) {
         const timeMoment = moment(time).tz(chartTimezone);
         return isMajorHour(timeMoment) ? timeMoment.format('ddd ha') : timeMoment.format('ha');
       }))
-    .call(g => g.select('.domain').remove())
-    .call(g => g.selectAll('.tick line')
-      .attr('stroke-width', d => isMajorHour(d) ? 1 : 0.5)
-      .attr('stroke-dasharray', d => isMajorHour(d) ? '1,3' : '0.5,3.5')
+    .call((g) => g.select('.domain').remove())
+    .call((g) => g.selectAll('.tick line')
+      .attr('stroke-width', (d) => isMajorHour(d) ? 1 : 0.5)
+      .attr('stroke-dasharray', (d) => isMajorHour(d) ? '1,3' : '0.5,3.5')
       .clone().lower()
       .attr('x2', width))
-    .call(g => g.selectAll('.tick text')
-      .attr('font-weight', d => isMajorHour(d) ? 'bold' : 'regular'));
+    .call((g) => g.selectAll('.tick text')
+      .attr('font-weight', (d) => isMajorHour(d) ? 'bold' : 'regular'));
 
-  const nowLine = g => g
+  const nowLine = (g) => g
     .attr('id', 'nowline')
     .attr('transform', `translate(${margin.left},${y(new Date())})`)
-    .call(g => g.append('path')
+    .call((g) => g.append('path')
       .attr('stroke', 'currentColor')
       .attr('fill', 'currentColor')
       .attr('stroke-width', 1)
       .attr('d', `M 0 0 l -4 2 l 0 -4 z`))
-    .call(g => g.append('path')
+    .call((g) => g.append('path')
       .attr('stroke', 'currentColor')
       .attr('stroke-width', 1.5)
       .attr('d', `M 0 0 h ${width}`));
@@ -232,10 +232,10 @@ function renderChart(data) {
   }, 60000);
 
   const voronoi = d3.Delaunay
-    .from(stops, d => x(d.stop.station.distance), d => y(d.stop.time))
+    .from(stops, (d) => x(d.stop.station.distance), (d) => y(d.stop.time))
     .voronoi([0, 0, width, height]);
 
-  const tooltip = g => {
+  const tooltip = (g) => {
     const tooltip = g.append('g')
       .style('font', '14px "Roboto Condensed", sans-serif');
 
@@ -278,7 +278,7 @@ function renderChart(data) {
         d3.selectAll('.path_bkgd')
           .attr('stroke-width', 6);
       })
-      .on('mouseover', d => {
+      .on('mouseover', (d) => {
         d3.selectAll('.path_station')
           .attr('opacity', 0);
         d3.selectAll('.path')
@@ -413,20 +413,20 @@ function renderChart(data) {
           {offset: '100%', color: nightColor},
         ])
       .enter().append('stop')
-        .attr('offset', d => d.offset)
-        .attr('stop-color', d => d.color);
+        .attr('offset', (d) => d.offset)
+        .attr('stop-color', (d) => d.color);
 
-  const trainIsEven = d => ((d.number.replace(/\D/g, '')) % 2 == 0) != d.swap_evenodd;
-  const trainIsOdd = d => !trainIsEven(d);
-  const trainIsShort = d => _.uniq(d.stops.map(stop => stop.station.stop_id)).length < 3;
-  const reverseIfUpsideDown = d => d.length === 0 ? [] : d[0].station.distance < d[d.length - 1].station.distance ? d : [...d].reverse();
+  const trainIsEven = (d) => ((d.number.replace(/\D/g, '')) % 2 == 0) != d.swap_evenodd;
+  const trainIsOdd = (d) => !trainIsEven(d);
+  const trainIsShort = (d) => _.uniq(d.stops.map(stop => stop.station.stop_id)).length < 3;
+  const reverseIfUpsideDown = (d) => d.length === 0 ? [] : d[0].station.distance < d[d.length - 1].station.distance ? d : [...d].reverse();
 
   const vehiclePath = svg.append('g')
     .attr('fill', 'none')
     .selectAll('g')
     .data(formattedTrips)
     .join('g')
-    .attr('id', d => `g_${d.id}`)
+    .attr('id', (d) => `g_${d.id}`)
     .classed('even', trainIsEven)
     .classed('odd', trainIsOdd);
 
@@ -435,15 +435,15 @@ function renderChart(data) {
     .attr('stroke', '#222222')
     .attr('stroke-width', 6)
     .attr('stroke-linejoin', 'round')
-    .attr('d', d => line(reverseIfUpsideDown(d.stops)));
+    .attr('d', (d) => line(reverseIfUpsideDown(d.stops)));
 
   vehiclePath.append('path')
     .classed('path', true)
-    .attr('id', d => `path_${d.id}`)
+    .attr('id', (d) => `path_${d.id}`)
     .attr('stroke', 'url(#line-gradient)')
     .attr('stroke-width', 2.5)
     .attr('stroke-linejoin', 'round')
-    .attr('d', d => line(reverseIfUpsideDown(d.stops)));
+    .attr('d', (d) => line(reverseIfUpsideDown(d.stops)));
 
   const vehicleText = svg.append('g')
     .attr('fill', 'currentColor')
@@ -451,22 +451,22 @@ function renderChart(data) {
     .selectAll('g')
     .data(formattedTrips)
     .join('g')
-    .style('font', d => `bold ${d.number.length > 3 ? 11 : 14}px Roboto, sans-serif`)
+    .style('font', (d) => `bold ${d.number.length > 3 ? 11 : 14}px Roboto, sans-serif`)
     .classed('even', trainIsEven)
     .classed('odd', trainIsOdd);
 
   vehicleText.append('text')
     .append('textPath')
-    .attr('xlink:href', d => `#path_${d.id}`)
+    .attr('xlink:href', (d) => `#path_${d.id}`)
     .style('text-anchor', 'middle')
     .attr('stroke-width', '3')
     .attr('stroke', '#222222')
     .attr('paint-order', 'stroke')
-    .text(d => d.number)
-    .attr('startOffset', d => `${18 + 14 * (trainIsOdd(d) | 0) + 25 * (trainIsShort(d) | 0)}%`)
+    .text((d) => d.number)
+    .attr('startOffset', (d) => `${18 + 14 * (trainIsOdd(d) | 0) + 25 * (trainIsShort(d) | 0)}%`)
     .clone(true)
-    .text(d => trainIsShort(d) ? '' : d.number)
-    .attr('startOffset', d => `${68 + 14 * (trainIsOdd(d) | 0)}%`);
+    .text((d) => trainIsShort(d) ? '' : d.number)
+    .attr('startOffset', (d) => `${68 + 14 * (trainIsOdd(d) | 0)}%`);
 
   const dwells = stops => {
     var result = [];
@@ -488,15 +488,15 @@ function renderChart(data) {
     .selectAll('g')
     .data(formattedTrips)
     .join('g')
-    .attr('id', d => `dwells_${d.id}`)
+    .attr('id', (d) => `dwells_${d.id}`)
     .classed('even', trainIsEven)
     .classed('odd', trainIsOdd);
 
   vehicleDwells.append('g')
     .selectAll('path')
-    .data(d => dwells(d.stops))
+    .data((d) => dwells(d.stops))
     .join('path')
-    .attr('d', d => ` M ${x(d[0].station.distance)} ${y(d[0].time)} L ${x(d[1].station.distance)} ${y(d[1].time)}`)
+    .attr('d', (d) => ` M ${x(d[0].station.distance)} ${y(d[0].time)} L ${x(d[1].station.distance)} ${y(d[1].time)}`)
     .attr('stroke-linecap', 'round')
     .attr('stroke-width', 8)
     .attr('stroke', '#222222')
@@ -510,17 +510,17 @@ function renderChart(data) {
     .join('g')
     .attr('stroke-width', 2)
     .attr('stroke', '#222222')
-    .attr('fill', d => 'white')
-    .attr('id', d => `stops_${d.id}`)
+    .attr('fill', (d) => 'white')
+    .attr('id', (d) => `stops_${d.id}`)
     .classed('even', trainIsEven)
     .classed('odd', trainIsOdd);
 
   vehicleStops.append('g')
     .selectAll('path')
-    .data(d => d.stops.filter(d => d.type === 'stop'))
+    .data((d) => d.stops.filter((d) => d.type === 'stop'))
     .join('path')
-    .attr('transform', d => `translate(${x(d.station.distance)},${y(d.time)})`)
-    .attr('d', d => ' M 3 0 A 3 3 0 1 1 -3 0 A 3 3 0 1 1 3 0 z');
+    .attr('transform', (d) => `translate(${x(d.station.distance)},${y(d.time)})`)
+    .attr('d', (d) => ' M 3 0 A 3 3 0 1 1 -3 0 A 3 3 0 1 1 3 0 z');
 
   svg.append('g')
     .call(tooltip);

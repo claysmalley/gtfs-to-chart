@@ -1,6 +1,6 @@
 {
   "name": "gtfs-to-chart",
-  "version": "2.0.4",
+  "version": "2.0.7",
   "private": false,
   "description": "Generate stringline charts of a transit routes from GTFS",
   "keywords": [
@@ -24,31 +24,15 @@
   },
   "scripts": {
     "start": "node ./app",
-    "test": "xo"
-  },
-  "xo": {
-    "esnext": true,
-    "rules": {
-      "camelcase": [
-        "error",
-        {
-          "properties": "never"
-        }
-      ],
-      "object-curly-spacing": [
-        "error",
-        "always"
-      ]
-    },
-    "space": true
+    "prepare": "husky install"
   },
   "dependencies": {
     "better-copy": "^1.0.4",
-    "chalk": "^5.1.2",
+    "chalk": "^5.3.0",
     "connect-slashes": "^1.4.0",
     "express": "^4.18.2",
-    "gtfs": "^3.6.1",
-    "js-beautify": "^1.14.7",
+    "gtfs": "^4.4.3",
+    "js-beautify": "^1.14.8",
     "lodash-es": "^4.17.21",
     "moment": "^2.29.4",
     "moment-timezone": "^0.5.37",
@@ -60,14 +44,16 @@
     "simplify-geojson": "^1.0.5",
     "sqlstring": "^2.3.3",
     "timer-machine": "^1.1.0",
-    "untildify": "^4.0.0",
-    "yargs": "^17.6.2"
+    "untildify": "^5.0.0",
+    "yargs": "^17.7.2"
   },
   "devDependencies": {
-    "xo": "^0.52.4"
+    "husky": "^8.0.3",
+    "lint-staged": "^13.2.3",
+    "prettier": "^3.0.0"
   },
   "engines": {
-    "node": ">= 14.x"
+    "node": ">= 18.x"
   },
   "release-it": {
     "github": {
@@ -78,5 +64,12 @@
         "filename": "CHANGELOG.md"
       }
     }
+  },
+  "prettier": {
+    "singleQuote": true
+  },
+  "lint-staged": {
+    "*.json": "prettier --write",
+    "*.{js,css,md}": "prettier --write"
   }
 }
