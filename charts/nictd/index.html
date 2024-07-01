@@ -1,0 +1,16 @@
+<!DOCTYPE html><html><head><title></title><meta charset="utf-8"><link rel="stylesheet" href="https://unpkg.com/bootstrap@4/dist/css/bootstrap.min.css"><link rel="stylesheet" href="css/chart_styles.css"><meta name="viewport" content="initial-scale=1.0, width=device-width"><style>a, a:hover { color: #f18421; }</style></head><body><div class="container"><div class="row mt-4 mb-2"><div class="col-md-12"><h1 class="overview-label">Northern Indiana Commuter Transportation District Schedules</h1></div></div><div class="row mt-4 mb-2"><div class="col-md-12"><div class="input-group mb-3"><div class="input-group-prepend"><button class="btn btn-outline-secondary" type="button" onclick="clearFilter()">Clear</button></div><input class="form-control" id="filter" type="text" placeholder="Search..." oninput="filterRoutes()"></div></div></div><div class="row"><div class="col"><div class="list-group"><a class="list-group-item" href="south-shore.html"><h4 class="list-group-item-heading d-flex align-items-center"><span>South Shore Line</span><span style="display:none;"> </span></h4></a></div></div></div></div><script>function filterRoutes() {
+  let filterWords = document.querySelector('#filter').value.toLowerCase().split(" ");
+  let listItems = document.querySelectorAll('a.list-group-item');
+  listItems.forEach(listItem => {
+    if (filterWords.length == 0 || filterWords.every(word => listItem.textContent.toLowerCase().includes(word))) {
+      listItem.removeAttribute('hidden');
+    } else {
+      listItem.setAttribute('hidden', 'true');
+    }
+  });
+}
+function clearFilter() {
+  document.querySelector('#filter').value = '';
+  filterRoutes();
+}
+filterRoutes();</script></body></html>
